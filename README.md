@@ -13,7 +13,7 @@ The `blender` directory contains the source code of the Blender add-on importing
 Installation
 ------------
 
-Download a [release](TODO) and make a zip of `blender/MapsModelsImporter/`. In Blender, go to `Edit > Preferences`, `Add-on`, `Install`, then browse to the zip file.
+Download a [release](https://github.com/eliemichel/MapsModelsImporter/releases) and make a zip of `blender/MapsModelsImporter/`. In Blender, go to `Edit > Preferences`, `Add-on`, `Install`, then browse to the zip file.
 
 Usage
 -----
@@ -35,7 +35,7 @@ Usage
 Disclaimer
 ----------
 
-This is a proof of concept showcasing how the 3D render process of Google Maps can be inspected. This is intended for educational purpose only. For a more in-depth analysis, see [Importing Actual 3D Models From Google Maps](TODO).
+This is a proof of concept showcasing how the 3D render process of Google Maps can be inspected. This is intended for educational purpose only. For a more in-depth analysis, see [Importing Actual 3D Models From Google Maps](https://blog.exppad.com/article/importing-actual-3d-models-from-google-maps).
 
 Do not use this for any commercial nor redistribution purpose. Actually, the use of such tool might be allowed for private read-only use, as this is what happens when browsing Google Maps, but not beyond. I do not take responsibility for any use of this tool.
 
