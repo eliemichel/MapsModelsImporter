@@ -20,17 +20,22 @@ Usage
 
   1. Start RenderDoc, and `File > Inject into process`;
 
-  2. Start chrome using specific flags: `chrome.exe --disable-gpu-sandbox --gpu-startup-dialog --use-angle=gl`. Do NOT press Ok on the dialog box yet;
+  2. Start chrome or chromium using specific flags: `chrome.exe --disable-gpu-sandbox --gpu-startup-dialog --use-angle=gl`. Do NOT press Ok on the dialog box yet;
 
   3. In RenderDoc, search for the chrome process and inject into it;
 
-  4. Press OK in the chrom dialog;
+  4. Press OK in the chrome dialog;
 
   5. Go to Google Maps in satellite view, and take a capture using `Print Screen` **while moving** in the viewport;
 
   6. In RenderDoc, save the capture as an rdc file
 
   7. In Blender, go to `File > Import > Google Maps Capture` an choose your capture file.
+
+Troubleshooting
+---------------
+
+Unfortunately, the *inject into process* functionality of RenderDoc is not supported on linux. You can still import existing captures on linux, though.
 
 Disclaimer
 ----------
@@ -45,3 +50,9 @@ Help Wanted
 
 This repository does not provide the required RenderDoc binaries for linux nor for OSX. If you have such a system, build RenderDoc against Python 3.7.0 (the minor version matters) to be compatible with the version of Blender's Python distribution.
 
+Other links
+-----------
+
+To import map data in Blender, this open source addon is very handy: [domlysz/BlenderGIS](https://github.com/domlysz/BlenderGIS)
+
+Here is another attempt at reverse-engineering Google data: [retroplasma/earth-reverse-engineering](https://github.com/retroplasma/earth-reverse-engineering)
