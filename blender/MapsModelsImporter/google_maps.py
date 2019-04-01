@@ -130,7 +130,8 @@ def filesToBlender(context, prefix, max_blocks=200):
         values = context.scene.maps_models_importer_ref_matrix
         refMatrix = Matrix((values[0:4], values[4:8], values[8:12], values[12:16]))
 
-    for drawcallId in range(max_blocks):
+    drawcallId = 0
+    while max_blocks <= 0 or drawcallId < max_blocks:
         if not os.path.isfile("{}{:05d}-indices.bin".format(prefix, drawcallId)):
             break
 
@@ -160,6 +161,8 @@ def filesToBlender(context, prefix, max_blocks=200):
 
         mat_name = "BuildingMat-{:05d}".format(drawcallId)
         addImageMaterial(mat_name, obj, img)
+
+        drawcallId += 1
 
     # Save reference matrix
     if refMatrix:
