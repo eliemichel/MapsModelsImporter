@@ -35,7 +35,15 @@ Usage
 Troubleshooting
 ---------------
 
+### Linux
+
 Unfortunately, the *inject into process* functionality of RenderDoc is not supported on linux. You can still import existing captures on linux, though.
+
+### Missing blocks
+
+![Importer settings](doc/settings.png)
+
+By default, the addon limits to 200 blocks, but if you feel ready to let your Blender hang for a moment, you can increase it.
 
 Disclaimer
 ----------
