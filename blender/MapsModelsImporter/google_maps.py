@@ -98,6 +98,8 @@ def addImageMaterial(name, obj, img):
     obj.data.materials.append(mat)
     nodes = mat.node_tree.nodes
     principled = nodes["Principled BSDF"]
+    principled.inputs["Specular"].default_value = 0.0
+    principled.inputs["Roughness"].default_value = 1.0
     texture_node = nodes.new(type="ShaderNodeTexImage")
     texture_node.image = img
     links = mat.node_tree.links
