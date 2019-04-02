@@ -32,6 +32,8 @@ Usage
 
   7. In Blender, go to `File > Import > Google Maps Capture` an choose your capture file.
 
+If you feel lost, I made a quick walkthrough of the addon: https://youtu.be/X6Q7dbtXVZQ
+
 Troubleshooting
 ---------------
 
