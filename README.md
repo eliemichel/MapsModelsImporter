@@ -15,6 +15,8 @@ Installation
 
 Download a [release](https://github.com/eliemichel/MapsModelsImporter/releases) and make a zip of `blender/MapsModelsImporter/`. In Blender, go to `Edit > Preferences`, `Add-on`, `Install`, then browse to the zip file.
 
+Install [RenderDoc](https://renderdoc.org/builds). It [has been reported](https://github.com/eliemichel/MapsModelsImporter/issues/2) not working with the very last version. Try the portable version of RenderDoc 1.2 or RenderDoc 1.1.
+
 Usage
 -----
 
