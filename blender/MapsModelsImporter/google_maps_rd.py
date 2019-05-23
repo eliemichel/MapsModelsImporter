@@ -42,6 +42,13 @@ def list_relevant_calls(drawcalls, _strategy=0):
         first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <1.000000>)"
     elif _strategy == 1:
         first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <1.000000>, Stencil = <0x00>)"
+    elif _strategy == 2:
+        first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <0.000000>)"
+    elif _strategy == 3:
+        first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <0.000000>, Stencil = <0x00>)"
+    else:
+        print("Error: Could not find the beginning of the relevant 3D draw calls")
+        return []
     relevant_drawcalls = []
     is_relevant = False
     for draw in drawcalls:
@@ -53,7 +60,7 @@ def list_relevant_calls(drawcalls, _strategy=0):
             is_relevant = True
 
     if not relevant_drawcalls:
-        relevant_drawcalls = list_relevant_calls(drawcalls, _strategy=1)
+        relevant_drawcalls = list_relevant_calls(drawcalls, _strategy=_strategy+1)
 
     return relevant_drawcalls
 
