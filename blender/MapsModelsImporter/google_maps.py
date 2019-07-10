@@ -37,7 +37,7 @@ def captureToFiles(filepath, prefix):
     os.environ["PYTHONHOME"] = python_home
     os.environ["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
     os.environ["PYTHONPATH"] += os.pathsep + os.path.abspath(getBinaryDir())
-    python = os.path.join(python_home, "bin", "python.exe" if sys.platform == "win32" else "python")
+    python = os.path.join(python_home, "bin", "python.exe" if sys.platform == "win32" else "python3.7m") # warning: hardcoded python version for non-windows might fail with Blender update
     subprocess.run([python, SCRIPT_PATH, filepath, prefix])
 
 # -----------------------------------------------------------------------------
