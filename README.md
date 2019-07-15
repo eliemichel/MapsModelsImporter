@@ -28,7 +28,7 @@ Usage
 
   4. Press OK in the chrome dialog;
 
-  5. Go to Google Maps in satellite view, and take a capture using `Print Screen` **while moving** in the viewport;
+  5. Go to Google Maps (not Google Earth!) in satellite view, and take a capture using `Print Screen` **while moving** in the viewport;
 
   6. In RenderDoc, save the capture as an rdc file
 
