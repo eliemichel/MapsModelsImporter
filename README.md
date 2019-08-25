@@ -13,7 +13,9 @@ The `blender` directory contains the source code of the Blender add-on importing
 Installation
 ------------
 
-Download a [release](https://github.com/eliemichel/MapsModelsImporter/releases) and make a zip of `blender/MapsModelsImporter/`. In Blender, go to `Edit > Preferences`, `Add-on`, `Install`, then browse to the zip file.
+Download a [release](https://github.com/eliemichel/MapsModelsImporter/releases) or make a zip of `blender/MapsModelsImporter/`. In Blender, go to `Edit > Preferences`, `Add-on`, `Install`, then browse to the zip file.
+
+**/!\ Do not use the "Download as zip" button of GitHub, make sure you use a release zip instead.**
 
 Install [RenderDoc](https://renderdoc.org/builds). It [has been reported](https://github.com/eliemichel/MapsModelsImporter/issues/2) not working with the very last version. Try the portable version of RenderDoc 1.2 or RenderDoc 1.1.
 
