@@ -46,7 +46,9 @@ class CaptureWrapper():
 
         if status != rd.ReplayStatus.Succeeded:
             print("Couldn't initialise replay: " + str(status))
-            self.cap.shutdown()
+            if status == 15:
+                print("This is likely due to an unsupported version of RenderDoc. Please use RenderDoc 1.1 or RenderDoc 1.2 Portable.")
+            self.cap.Shutdown()
             self.err = True
             return None
         return self.controller
