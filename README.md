@@ -13,7 +13,9 @@ The `blender` directory contains the source code of the Blender add-on importing
 Installation
 ------------
 
-Download a [release](https://github.com/eliemichel/MapsModelsImporter/releases) and make a zip of `blender/MapsModelsImporter/`. In Blender, go to `Edit > Preferences`, `Add-on`, `Install`, then browse to the zip file.
+Download a [release](https://github.com/eliemichel/MapsModelsImporter/releases) or make a zip of `blender/MapsModelsImporter/`. In Blender, go to `Edit > Preferences`, `Add-on`, `Install`, then browse to the zip file.
+
+**/!\ Do not use the "Download as zip" button of GitHub, make sure you use a release zip instead.**
 
 Install [RenderDoc](https://renderdoc.org/builds). It [has been reported](https://github.com/eliemichel/MapsModelsImporter/issues/2) not working with the very last version. Try the portable version of RenderDoc 1.2 or RenderDoc 1.1.
 
@@ -28,13 +30,13 @@ Usage
 
   4. Press OK in the chrome dialog;
 
-  5. Go to Google Maps in satellite view, and take a capture using `Print Screen` **while moving** in the viewport;
+  5. Go to Google Maps (not Google Earth!) in satellite view, and take a capture using `Print Screen` **while moving** in the viewport;
 
   6. In RenderDoc, save the capture as an rdc file
 
   7. In Blender, go to `File > Import > Google Maps Capture` an choose your capture file.
 
-If you feel lost, I made a quick walkthrough of the addon: https://youtu.be/X6Q7dbtXVZQ
+If you feel lost, I made a quick walkthrough of the addon: https://youtu.be/X6Q7dbtXVZQ Useful information can be found in the comment of the video, as well as on [the support thread on blenderartists](https://blenderartists.org/t/google-maps-models-importer/1153561).
 
 Troubleshooting
 ---------------
