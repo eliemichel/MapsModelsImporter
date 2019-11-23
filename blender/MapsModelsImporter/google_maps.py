@@ -33,7 +33,8 @@ def captureToFiles(filepath, prefix):
     """Extract binary files and textures from a RenderDoc capture file.
     This spawns a standalone Python interpreter because renderdoc module cannot be loaded in embedded Python"""
     blender_dir = os.path.dirname(sys.executable)
-    python_home = os.path.join(blender_dir, "2.80", "python")
+    blender_version = [d for d in os.listdir(blender_dir) if d.startswith("2.")][0]
+    python_home = os.path.join(blender_dir, blender_version, "python")
     os.environ["PYTHONHOME"] = python_home
     os.environ["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
     os.environ["PYTHONPATH"] += os.pathsep + os.path.abspath(getBinaryDir())
