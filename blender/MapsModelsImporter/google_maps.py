@@ -136,7 +136,8 @@ def filesToBlender(context, prefix, max_blocks=200):
     drawcallId = 0
     while max_blocks <= 0 or drawcallId < max_blocks:
         if not os.path.isfile("{}{:05d}-indices.bin".format(prefix, drawcallId)):
-            break
+            drawcallId += 1
+            continue
 
         try:
             indices, positions, uvs, img, constants = loadData(prefix, drawcallId)
