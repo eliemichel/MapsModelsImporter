@@ -53,6 +53,10 @@ Unfortunately, the *inject into process* functionality of RenderDoc is not suppo
 
 By default, the addon limits to 200 blocks, but if you feel ready to let your Blender hang for a moment, you can increase it.
 
+### I don't want to uninstall Google Chrome...
+
+Check this trick out: https://github.com/eliemichel/MapsModelsImporter/issues/15
+
 Disclaimer
 ----------
 
