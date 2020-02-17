@@ -1,5 +1,7 @@
 *If this helps you save time or money for your job, please condier supporting the work involved in here ;)* [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=DNEEF8GDX2EV6&currency_code=EUR&source=url)
 
+**News** (from Feb 17, 2020) A new version is available that should make the whole process easier and work on more hardware. It now uses the last version of RenderDoc (1.6), the last version of Chrome (80) and the last version of Blender (2.82). This is quite a change and if you notice any regression (like it used to work and now it does not) please report!
+
 Maps Models Importer
 ====================
 
@@ -10,38 +12,53 @@ The `blender` directory contains the source code of the Blender add-on importing
 
 ![Screenshot of blender addon in action](doc/screenshot.png)
 
-**NB** This is an add-on for Blender 2.80 and above, which you can download from [here](https://builder.blender.org/download/).
-
 Installation
 ------------
 
-Download a [release](https://github.com/eliemichel/MapsModelsImporter/releases) or make a zip of `blender/MapsModelsImporter/`. In Blender, go to `Edit > Preferences`, `Add-on`, `Install`, then browse to the zip file.
+Download a [release](https://github.com/eliemichel/MapsModelsImporter/releases) or make a zip of `blender/MapsModelsImporter/`. In Blender 2.82, go to `Edit > Preferences`, `Add-on`, `Install`, then browse to the zip file.
 
 **/!\ Do not use the "Download as zip" button of GitHub, make sure you use a release zip instead.**
 
-Install [RenderDoc](https://renderdoc.org/builds). It [has been reported](https://github.com/eliemichel/MapsModelsImporter/issues/2) not working with the very last version. Try the portable version of RenderDoc 1.2 or RenderDoc 1.1.
+Install [RenderDoc](https://renderdoc.org/builds) **version 1.6**.
+
+NB: If you are using an older release (v0.1.x and before), you must use the portable version of RenderDoc 1.2 or RenderDoc 1.1. This is no longer the case since v0.2.0 of this add-on.
 
 Usage
 -----
 
+You can follow instruction from the walkthrough video: https://youtu.be/X6Q7dbtXVZQ Alternatively, check out the following steps:
+
   1. Start RenderDoc, and `File > Inject into process`;
 
-  2. Start chrome or chromium using specific flags: `chrome.exe --disable-gpu-sandbox --gpu-startup-dialog --use-angle=gl`. Do NOT press Ok on the dialog box yet;
+  2. Start terminal (Win+R, "cmd") and run (adapt the second line to the location of your Chrome installation):
 
-  3. In RenderDoc, search for the chrome process and inject into it;
+```
+set RENDERDOC_HOOK_EGL=0
+"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --disable-gpu-sandbox --gpu-startup-dialog
+```
 
-  4. Press OK in the chrome dialog;
+  3. Do NOT press Ok on the dialog box yet;
 
-  5. Go to Google Maps (not Google Earth!) in satellite view, and take a capture using `Print Screen` **while moving** in the viewport;
+  4. In RenderDoc, search for the chrome process and inject into it;
 
-  6. In RenderDoc, save the capture as an rdc file
+  5. Press OK in the chrome dialog;
 
-  7. In Blender, go to `File > Import > Google Maps Capture` an choose your capture file.
+  6. Go to Google Maps (not Google Earth!) in satellite view, and take a capture using `Print Screen` **while moving** in the viewport;
 
-If you feel lost, I made a quick walkthrough of the addon: https://youtu.be/X6Q7dbtXVZQ Useful information can be found in the comment of the video, as well as on [the support thread on blenderartists](https://blenderartists.org/t/google-maps-models-importer/1153561).
+  7. In RenderDoc, save the capture as an rdc file
+
+  8. In Blender, go to `File > Import > Google Maps Capture` an choose your capture file.
+
+For step 2. you can create a link to Chrome rather than usig the cmd, and put as target (again, adapt the path to `chrome.exe` to your installation):
+
+```
+C:\Windows\System32\cmd.exe /c "SET RENDERDOC_HOOK_EGL=0 && START "" ^"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe^" --disable-gpu-sandbox --gpu-startup-dialog"
+```
 
 Troubleshooting
 ---------------
+
+Useful information can be found in the comment of the video, as well as on [the support thread on blenderartists](https://blenderartists.org/t/google-maps-models-importer/1153561).
 
 ### Linux
 
@@ -55,7 +72,25 @@ By default, the addon limits to 200 blocks, but if you feel ready to let your Bl
 
 ### I don't want to uninstall Google Chrome...
 
-Check this trick out: https://github.com/eliemichel/MapsModelsImporter/issues/15
+Since version v0.2.0 of this add-on, it is no longer needed to install an old version of Chrome.
+
+With older versions (depreciated) of this add-on, you have to use a specific version of Chrome. Check this trick out to install it alongside your current version: https://github.com/eliemichel/MapsModelsImporter/issues/15
+
+### There is no option for 3D in Google Maps
+
+Try appending `?force=webgl` at the end of the google maps URL.
+
+### API: OpenGL (Not Presenting)
+
+This was a common issue with versions of this add-on prior to v0.2.0. Update to the latest version of this add-on, then make sure you remove the `--use-angle=gl` option from the chrome shortcut.
+
+### Chrome is showing a warning about an unsupported feature
+
+If this is about the `--disable-gpu-sandbox` flag, it is just a warning, it should not be a problem.
+
+### Chrome window is all plain black
+
+Try to set and unset the fullscreen mode using F11.
 
 Disclaimer
 ----------
@@ -68,7 +103,7 @@ Do not use this for any commercial nor redistribution purpose. Actually, the use
 Help Wanted
 -----------
 
-This repository does not provide the required RenderDoc binaries for linux nor for OSX. If you have such a system, build RenderDoc against Python 3.7.0 (the minor version matters) to be compatible with the version of Blender's Python distribution.
+This repository does not provide the required RenderDoc binaries for linux nor for OSX. If you have such a system, build RenderDoc against Python 3.7.4 (the minor version matters) to be compatible with the version of Blender's Python distribution.
 
 Other links
 -----------

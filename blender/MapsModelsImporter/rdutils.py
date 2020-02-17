@@ -42,7 +42,7 @@ class CaptureWrapper():
             self.err = True
             return None
         
-        status,self.controller = self.cap.OpenCapture(None)
+        status,self.controller = self.cap.OpenCapture(rd.ReplayOptions(), None)
 
         if status != rd.ReplayStatus.Succeeded:
             print("Couldn't initialise replay: " + str(status))

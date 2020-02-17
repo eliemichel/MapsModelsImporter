@@ -29,7 +29,7 @@ from .utils import getBinaryDir, makeTmpDir
 
 SCRIPT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "google_maps_rd.py")
 
-def captureToFiles(filepath, prefix):
+def captureToFiles(filepath, prefix, max_blocks):
     """Extract binary files and textures from a RenderDoc capture file.
     This spawns a standalone Python interpreter because renderdoc module cannot be loaded in embedded Python"""
     blender_dir = os.path.dirname(sys.executable)
@@ -39,7 +39,7 @@ def captureToFiles(filepath, prefix):
     os.environ["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
     os.environ["PYTHONPATH"] += os.pathsep + os.path.abspath(getBinaryDir())
     python = os.path.join(python_home, "bin", "python.exe" if sys.platform == "win32" else "python3.7m") # warning: hardcoded python version for non-windows might fail with Blender update
-    subprocess.run([python, SCRIPT_PATH, filepath, prefix])
+    subprocess.run([python, SCRIPT_PATH, filepath, prefix, str(max_blocks)])
 
 # -----------------------------------------------------------------------------
 
@@ -55,19 +55,27 @@ def extractUniforms(constants, refMatrix):
     """Extract from constant buffer the model matrix and uv offset
     The reference matrix is used to cancel the view part of teh modelview matrix
     """
-    uvOffsetScale = constants['$Globals']['webgl_fa7f624db8ab37d1']
-    mdata = constants['$Globals']['webgl_3c7b7f37a9bd4c1d']
+    globUniforms = constants['$Globals']
+    if '_w' in globUniforms:
+        [ou, ov, su, sv] = globUniforms['_w']
+        ov -= 1.0 / sv
+        sv = -sv
+        uvOffsetScale = [ou, ov, su, sv]
+    else:
+        uvOffsetScale = globUniforms['webgl_fa7f624db8ab37d1']
+    mdata = globUniforms['_s'] if '_s' in globUniforms else globUniforms['webgl_3c7b7f37a9bd4c1d']
     matrix = Matrix([
         mdata[0:4],
         mdata[4:8],
         mdata[8:12],
-        [0, 0, 0, 1],
-    ])
+        mdata[12:16]
+    ]).transposed()
+
     if refMatrix is None:
         # Rotate around Y because Google Maps uses X as up axis
         refMatrix = Matrix.Rotation(-pi/2, 4, 'Y') @ matrix.inverted()
     matrix = refMatrix @ matrix
-    
+
     matrix[0][3] *= .0039
     matrix[1][3] *= .0039
     matrix[2][3] *= .0039
@@ -133,15 +141,21 @@ def filesToBlender(context, prefix, max_blocks=200):
         values = context.scene.maps_models_importer_ref_matrix
         refMatrix = Matrix((values[0:4], values[4:8], values[8:12], values[12:16]))
 
+    if max_blocks <= 0:
+        # If no specific bound, max block is the number of .bin files in the directory
+        max_blocks = len([file for file in os.listdir(os.path.dirname(prefix)) if file.endswith(".bin")])
+
     drawcallId = 0
-    while max_blocks <= 0 or drawcallId < max_blocks:
+    while drawcallId < max_blocks:
         if not os.path.isfile("{}{:05d}-indices.bin".format(prefix, drawcallId)):
-            break
+            drawcallId += 1
+            continue
 
         try:
             indices, positions, uvs, img, constants = loadData(prefix, drawcallId)
         except FileNotFoundError as err:
             print("Skipping ({})".format(err))
+            drawcallId += 1
             continue
 
         uvOffsetScale, matrix, refMatrix = extractUniforms(constants, refMatrix)
@@ -154,7 +168,7 @@ def filesToBlender(context, prefix, max_blocks=200):
 
         [ou, ov, su, sv] = uvOffsetScale
         uvs = [ [ (floor(u * 65535.0 + 0.5) + ou) * su, (floor(v * 65535.0 + 0.5) + ov) * sv ] for u, v in uvs ]
-        
+
         if len(indices) == 0:
             continue
 
@@ -177,5 +191,5 @@ def filesToBlender(context, prefix, max_blocks=200):
 
 def importCapture(context, filepath, max_blocks, pref):
     prefix = makeTmpDir(pref, filepath)
-    captureToFiles(filepath, prefix)
+    captureToFiles(filepath, prefix, max_blocks)
     filesToBlender(context, prefix, max_blocks)

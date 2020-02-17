@@ -29,7 +29,8 @@ import renderdoc as rd
 from meshdata import MeshData, makeMeshData
 from rdutils import CaptureWrapper
 
-_, CAPTURE_FILE, FILEPREFIX = sys.argv[:3]
+_, CAPTURE_FILE, FILEPREFIX, MAX_BLOCKS_STR = sys.argv[:4]
+MAX_BLOCKS = int(MAX_BLOCKS_STR)
 
 # Start chrome with "chrome.exe --disable-gpu-sandbox --gpu-startup-dialog --use-angle=gl"
 
@@ -38,6 +39,8 @@ def list_relevant_calls(drawcalls, _strategy=0):
     It may different in RenderDoc UI and in Python module, for some reason
     """
     first_call = ""
+    last_call = "glDrawArrays(4)"
+    api_type = "opengl"
     if _strategy == 0:
         first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <1.000000>)"
     elif _strategy == 1:
@@ -46,46 +49,42 @@ def list_relevant_calls(drawcalls, _strategy=0):
         first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <0.000000>)"
     elif _strategy == 3:
         first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <0.000000>, Stencil = <0x00>)"
+    elif _strategy == 4:
+        first_call = "ClearRenderTargetView(0.000000, 0.000000, 0.000000, 1.000000)"
+        last_call = "Draw(4)"
+        api_type = "d3dx"
     else:
         print("Error: Could not find the beginning of the relevant 3D draw calls")
-        return []
+        return [], "none"
     relevant_drawcalls = []
     is_relevant = False
     for draw in drawcalls:
         if is_relevant:
-            if draw.name.startswith("glDrawArrays(4)"):
+            if draw.name.startswith(last_call):
                 break
             relevant_drawcalls.append(draw)
         if draw.name.startswith(first_call):
             is_relevant = True
 
     if not relevant_drawcalls:
-        relevant_drawcalls = list_relevant_calls(drawcalls, _strategy=_strategy+1)
+        relevant_drawcalls, api_type = list_relevant_calls(drawcalls, _strategy=_strategy+1)
 
-    return relevant_drawcalls
-
-""" alternate version, for RenderDoc UI (TODO)
-def list_relevant_calls(drawcalls):
-    it = iter(drawcalls)
-    parentdraw = next(it)
-    while not parentdraw.name.startswith("Colour Pass #2"):
-        print(parentdraw.name)
-        parentdraw = next(it)
-    relevant_drawcalls = []
-    for drawcallId in range(len(parentdraw.children)):
-        draw = parentdraw.children[drawcallId]
-        if draw.name.startswith("glDrawElements"):
-            relevant_drawcalls.append(draw)
-    return relevant_drawcalls
-"""
+    return relevant_drawcalls, api_type
 
 def main(controller):
     drawcalls = controller.GetDrawcalls()
-    relevant_drawcalls = list_relevant_calls(drawcalls)
+    relevant_drawcalls, api_type = list_relevant_calls(drawcalls)
 
-    for drawcallId, draw in enumerate(relevant_drawcalls):
+    if api_type == "opengl":
+        drawcall_prefix = "glDrawElements"
+    elif api_type == "d3dx":
+        drawcall_prefix = "DrawIndexed"
+
+    max_drawcall = min(MAX_BLOCKS + 1, len(relevant_drawcalls))
+
+    for drawcallId, draw in enumerate(relevant_drawcalls[:max_drawcall]):
         print("Draw call: " + draw.name)
-        if not draw.name.startswith("glDrawElements"):
+        if not draw.name.startswith(drawcall_prefix):
             print("(Skipping)")
             continue
 
@@ -123,9 +122,17 @@ def main(controller):
         ep = state.GetShaderEntryPoint(rd.ShaderStage.Vertex)
         ref = state.GetShaderReflection(rd.ShaderStage.Vertex)
         constants = {}
-        for cb in ref.constantBlocks:
+        for cbn, cb in enumerate(ref.constantBlocks):
             block = {}
-            variables = controller.GetCBufferVariableContents(shader, ep, cb.bindPoint, rd.ResourceId.Null(), 0)
+            cbuff = state.GetConstantBuffer(rd.ShaderStage.Vertex, cbn, 0)
+            variables = controller.GetCBufferVariableContents(
+                state.GetGraphicsPipelineObject(),
+                shader,
+                ep,
+                cb.bindPoint,
+                cbuff.resourceId,
+                0
+            )
             for var in variables:
                 val = 0
                 if var.members:
@@ -136,6 +143,8 @@ def main(controller):
                             memval = member.value.fv[:member.rows * member.columns]
                         elif member.type == rd.VarType.Int:
                             memval = member.value.iv[:member.rows * member.columns]
+                        else:
+                            print("Unsupported type!")
                         # ...
                         val.append(memval)
                 else:
@@ -143,6 +152,8 @@ def main(controller):
                         val = var.value.fv[:var.rows * var.columns]
                     elif var.type == rd.VarType.Int:
                         val = var.value.iv[:var.rows * var.columns]
+                    else:
+                        print("Unsupported type!")
                     # ...
                 block[var.name] = val
             constants[cb.name] = block

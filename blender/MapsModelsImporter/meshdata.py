@@ -60,7 +60,7 @@ def unpackData(fmt, data):
         maxNeg = -(1 << (fmt.compByteWidth - 1))
         divisor = float(-(maxNeg-1))
         value = tuple((float(x) if (x == maxNeg) else (float(x) / divisor)) for x in value)
-    if fmt.bgraOrder:
+    if fmt.BGRAOrder():
         # If the format is BGRA, swap the two components
         value = tuple(value[i] for i in [2, 1, 0, 3])
 
@@ -126,7 +126,6 @@ class MeshData(rd.MeshFormat):
         unpacked = mesh.fetchData(controller)
         for idx in indices[:3]:
             value = unpacked[idx]
-            print(value)
 
 # -----------------------------------------------------------------------------
 
