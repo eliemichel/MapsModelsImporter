@@ -166,15 +166,11 @@ def main(controller):
 
         # Texture
         # dirty
+        bindpoints = state.GetBindpointMapping(rd.ShaderStage.Fragment)
+        texture_bind = bindpoints.samplers[-1].bind
         resources = state.GetReadOnlyResources(rd.ShaderStage.Fragment)
-        # Get the last resource with non null resourceId
-        nullId = rd.ResourceId.Null()
-        rid = 0
-        for res in resources:
-            i = res.resources[0].resourceId
-            if i != nullId:
-                rid = i
-
+        rid = resources[texture_bind].resources[0].resourceId
+        
         texsave = rd.TextureSave()
         texsave.resourceId = rid
         texsave.mip = 0
