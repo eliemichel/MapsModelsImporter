@@ -50,7 +50,11 @@ def list_relevant_calls(drawcalls, _strategy=0):
     elif _strategy == 3:
         first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <0.000000>, Stencil = <0x00>)"
     elif _strategy == 4:
-        first_call = "ClearRenderTargetView(0.000000, 0.000000, 0.000000, 1.000000)"
+        first_call = "ClearRenderTargetView(0.000000, 0.000000, 0.000000"
+        last_call = "Draw(4)"
+        api_type = "d3dx"
+    elif _strategy == 5:
+        first_call = "" # Try from the beginning on
         last_call = "Draw(4)"
         api_type = "d3dx"
     else:
@@ -163,7 +167,13 @@ def main(controller):
         # Texture
         # dirty
         resources = state.GetReadOnlyResources(rd.ShaderStage.Fragment)
-        rid = resources[0].resources[0].resourceId
+        # Get the last resource with non null resourceId
+        nullId = rd.ResourceId.Null()
+        rid = 0
+        for res in resources:
+            i = res.resources[0].resourceId
+            if i != nullId:
+                rid = i
 
         texsave = rd.TextureSave()
         texsave.resourceId = rid
