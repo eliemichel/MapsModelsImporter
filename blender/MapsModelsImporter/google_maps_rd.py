@@ -40,7 +40,7 @@ def list_relevant_calls(drawcalls, _strategy=0):
     """
     first_call = ""
     last_call = "glDrawArrays(4)"
-    api_type = "opengl"
+    drawcall_prefix = "glDrawElements"
     if _strategy == 0:
         first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <1.000000>)"
     elif _strategy == 1:
@@ -52,11 +52,11 @@ def list_relevant_calls(drawcalls, _strategy=0):
     elif _strategy == 4:
         first_call = "ClearRenderTargetView(0.000000, 0.000000, 0.000000"
         last_call = "Draw(4)"
-        api_type = "d3dx"
+        drawcall_prefix = "DrawIndexed"
     elif _strategy == 5:
         first_call = "" # Try from the beginning on
         last_call = "Draw(4)"
-        api_type = "d3dx"
+        drawcall_prefix = "DrawIndexed"
     else:
         print("Error: Could not find the beginning of the relevant 3D draw calls")
         return [], "none"
@@ -64,34 +64,29 @@ def list_relevant_calls(drawcalls, _strategy=0):
     is_relevant = False
     for draw in drawcalls:
         if is_relevant:
-            if draw.name.startswith(last_call):
+            if draw.name.startswith(last_call) and relevant_drawcalls != []:
                 break
+            if not draw.name.startswith(drawcall_prefix):
+                print("(Skipping drawcall {})".format(draw.name))
+                continue
             relevant_drawcalls.append(draw)
         if draw.name.startswith(first_call):
             is_relevant = True
 
     if not relevant_drawcalls:
-        relevant_drawcalls, api_type = list_relevant_calls(drawcalls, _strategy=_strategy+1)
+        relevant_drawcalls, drawcall_prefix = list_relevant_calls(drawcalls, _strategy=_strategy+1)
 
-    return relevant_drawcalls, api_type
+    return relevant_drawcalls, drawcall_prefix
 
 def main(controller):
     drawcalls = controller.GetDrawcalls()
-    relevant_drawcalls, api_type = list_relevant_calls(drawcalls)
-
-    if api_type == "opengl":
-        drawcall_prefix = "glDrawElements"
-    elif api_type == "d3dx":
-        drawcall_prefix = "DrawIndexed"
+    relevant_drawcalls, drawcall_prefix = list_relevant_calls(drawcalls)
 
     max_drawcall = min(MAX_BLOCKS + 1, len(relevant_drawcalls))
 
     for drawcallId, draw in enumerate(relevant_drawcalls[:max_drawcall]):
         print("Draw call: " + draw.name)
-        if not draw.name.startswith(drawcall_prefix):
-            print("(Skipping)")
-            continue
-
+        
         controller.SetFrameEvent(draw.eventId, True)
         state = controller.GetPipelineState()
 

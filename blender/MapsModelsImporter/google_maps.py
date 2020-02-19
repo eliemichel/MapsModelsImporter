@@ -33,7 +33,7 @@ def captureToFiles(filepath, prefix, max_blocks):
     """Extract binary files and textures from a RenderDoc capture file.
     This spawns a standalone Python interpreter because renderdoc module cannot be loaded in embedded Python"""
     blender_dir = os.path.dirname(sys.executable)
-    blender_version = [d for d in os.listdir(blender_dir) if d.startswith("2.")][0]
+    blender_version = ("{0}.{1}").format(*bpy.app.version)
     python_home = os.path.join(blender_dir, blender_version, "python")
     os.environ["PYTHONHOME"] = python_home
     os.environ["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
@@ -55,15 +55,30 @@ def extractUniforms(constants, refMatrix):
     """Extract from constant buffer the model matrix and uv offset
     The reference matrix is used to cancel the view part of teh modelview matrix
     """
+
+    # Extract constants, which have different names depending on the browser/GPU driver
     globUniforms = constants['$Globals']
-    if '_w' in globUniforms:
+    if '_w' in globUniforms and '_s' in globUniforms:
         [ou, ov, su, sv] = globUniforms['_w']
         ov -= 1.0 / sv
         sv = -sv
         uvOffsetScale = [ou, ov, su, sv]
-    else:
+        mdata = globUniforms['_s']
+    elif 'webgl_fa7f624db8ab37d1' in globUniforms and 'webgl_3c7b7f37a9bd4c1d' in globUniforms:
         uvOffsetScale = globUniforms['webgl_fa7f624db8ab37d1']
-    mdata = globUniforms['_s'] if '_s' in globUniforms else globUniforms['webgl_3c7b7f37a9bd4c1d']
+        mdata = globUniforms['webgl_3c7b7f37a9bd4c1d']
+    elif '_webgl_fa7f624db8ab37d1' in globUniforms and '_webgl_3c7b7f37a9bd4c1d' in globUniforms:
+        [ou, ov, su, sv] = globUniforms['_webgl_fa7f624db8ab37d1']
+        ov -= 1.0 / sv
+        sv = -sv
+        uvOffsetScale = [ou, ov, su, sv]
+        mdata = globUniforms['_webgl_3c7b7f37a9bd4c1d']
+    else:
+        print("globUniforms:")
+        for k, v in globUniforms.items():
+            print("  {}: {}".format(k, v))
+        print("Capture file not supported. Please report to MapsModelsImporter developers providing the previous log line as well as the .rdc file.")
+    
     matrix = Matrix([
         mdata[0:4],
         mdata[4:8],
