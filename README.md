@@ -78,7 +78,7 @@ With older versions (depreciated) of this add-on, you have to use a specific ver
 
 ### There is no option for 3D in Google Maps
 
-Try appending `?force=webgl` at the end of the google maps URL.
+Try appending `?force=webgl` at the end of the google maps URL. Also, check that you enabled the Globe mode (an extra button on the right-hand side once you are in satellite mode).
 
 ### API: OpenGL (Not Presenting)
 
