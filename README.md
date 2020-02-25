@@ -70,6 +70,10 @@ Unfortunately, the *inject into process* functionality of RenderDoc is not suppo
 
 By default, the addon limits to 200 blocks, but if you feel ready to let your Blender hang for a moment, you can increase it.
 
+### Blender does not want to install the add-on
+
+Do NOT use the green "Clone or download" button of GitHub. I know it's tempting, but I cannot hide it, it's a GitHub feature. To get the proper zip, go to the [release page](https://github.com/eliemichel/MapsModelsImporter/releases/latest).
+
 ### I don't want to uninstall Google Chrome...
 
 Since version v0.2.0 of this add-on, it is no longer needed to install an old version of Chrome.
