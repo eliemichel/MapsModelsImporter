@@ -82,7 +82,10 @@ def main(controller):
     drawcalls = controller.GetDrawcalls()
     relevant_drawcalls, drawcall_prefix = list_relevant_calls(drawcalls)
 
-    max_drawcall = min(MAX_BLOCKS + 1, len(relevant_drawcalls))
+    if MAX_BLOCKS <= 0:
+        max_drawcall = len(relevant_drawcalls)
+    else:
+        max_drawcall = min(MAX_BLOCKS, len(relevant_drawcalls))
 
     for drawcallId, draw in enumerate(relevant_drawcalls[:max_drawcall]):
         print("Draw call: " + draw.name)
