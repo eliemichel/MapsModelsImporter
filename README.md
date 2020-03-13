@@ -90,11 +90,15 @@ This was a common issue with versions of this add-on prior to v0.2.0. Update to 
 
 ### Chrome is showing a warning about an unsupported feature
 
-If this is about the `--disable-gpu-sandbox` flag, it is just a warning, it should not be a problem.
+If chrome says something like "Unsupported command line, security will suffer", don't mind. This is due to the `--disable-gpu-sandbox` flag, but it is just a warning, it should not be a problem for what we are doing.
 
 ### Chrome window is all plain black
 
 Try to set and unset the fullscreen mode using F11.
+
+### There is no GPU pop-up
+
+Make sure you use the right custom shortcut to start chrome and that you closed any process chrome process before starting.
 
 ### How to increase the level of detail?
 
