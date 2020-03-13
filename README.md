@@ -113,6 +113,10 @@ If you want better quality captures, you should know that Google Maps loads LoDs
 
 But while doing so you also increase dramatically the number of block. Be aware of the fact that by default the MapsModelsImporter add-on limits to 200 blocks to prevent from freezing for too long. You can change this number on import.
 
+### It's taking too long, how to automate this process?
+
+Although I don't know how to automate the capture itself, you can easily automate the importing part, see [this issue](https://github.com/eliemichel/MapsModelsImporter/issues/39) for an example of automation script.
+
 Disclaimer
 ----------
 
