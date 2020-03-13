@@ -100,6 +100,10 @@ Try to set and unset the fullscreen mode using F11.
 
 Make sure you use the right custom shortcut to start chrome and that you closed any process chrome process before starting.
 
+### PrintScr does not actually take a capture
+
+It happens sometimes, in this case you can use the "Capture after delay" button in RenderDoc to trigger a capture. Don't forget to make sure to move in the 3D viewport at the very time the capture occurs.
+
 ### How to increase the level of detail?
 
 If you want better quality captures, you should know that Google Maps loads LoDs (Levels of Details) in relation with the window size of your web browser. There is several way to increase it:
