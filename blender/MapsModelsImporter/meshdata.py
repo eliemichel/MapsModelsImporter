@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019-2020 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -57,7 +57,7 @@ def unpackData(fmt, data):
         divisor = float((1 << (fmt.compByteWidth * 8)) - 1)
         value = tuple(float(x) / divisor for x in value)
     elif fmt.compType == rd.CompType.SNorm:
-        maxNeg = -(1 << (fmt.compByteWidth - 1))
+        maxNeg = -(1 << (fmt.compByteWidth * 8 - 1))
         divisor = float(-(maxNeg-1))
         value = tuple((float(x) if (x == maxNeg) else (float(x) / divisor)) for x in value)
     if fmt.BGRAOrder():

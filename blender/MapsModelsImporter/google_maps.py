@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019-2020 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -91,10 +91,6 @@ def extractUniforms(constants, refMatrix):
         refMatrix = Matrix.Rotation(-pi/2, 4, 'Y') @ matrix.inverted()
     matrix = refMatrix @ matrix
 
-    matrix[0][3] *= .0039
-    matrix[1][3] *= .0039
-    matrix[2][3] *= .0039
-
     return uvOffsetScale, matrix, refMatrix
 
 def addMesh(context, name, verts, tris, uvs):
@@ -148,7 +144,7 @@ def loadData(prefix, drawcallId):
 
 # -----------------------------------------------------------------------------
 
-def filesToBlender(context, prefix, max_blocks=200):
+def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
     """Import data from the files extracted by captureToFiles"""
     # Get reference matrix
     refMatrix = None
@@ -179,7 +175,7 @@ def filesToBlender(context, prefix, max_blocks=200):
         n = len(indices)
         tris = [ [ indices[i+j] for j in [[0,1,2],[0,2,1]][i%2] ] for i in range(n - 3)]
         tris = [ t for t in tris if t[0] != t[1] and t[0] != t[2] and t[1] != t[2] ]
-        verts = [ [ p[0], p[1], p[2] ] for p in positions ]
+        verts = [ [ p[0] * 256.0, p[1] * 256.0, p[2] * 256.0 ] for p in positions ]
 
         [ou, ov, su, sv] = uvOffsetScale
         uvs = [ [ (floor(u * 65535.0 + 0.5) + ou) * su, (floor(v * 65535.0 + 0.5) + ov) * sv ] for u, v in uvs ]
@@ -189,7 +185,7 @@ def filesToBlender(context, prefix, max_blocks=200):
 
         mesh_name = "BuildingMesh-{:05d}".format(drawcallId)
         obj = addMesh(context, mesh_name, verts, tris, uvs)
-        obj.matrix_world = matrix
+        obj.matrix_world = matrix * globalScale
 
         mat_name = "BuildingMat-{:05d}".format(drawcallId)
         addImageMaterial(mat_name, obj, img)
