@@ -26,7 +26,7 @@ from bpy_extras.io_utils import ImportHelper
 from bpy.props import StringProperty, IntProperty
 from bpy.types import Operator
 
-from .google_maps import importCapture
+from .google_maps import importCapture, MapsModelsImportError
 from .preferences import getPreferences
 
 class IMP_OP_GoogleMapsCapture(Operator, ImportHelper):
@@ -50,7 +50,13 @@ class IMP_OP_GoogleMapsCapture(Operator, ImportHelper):
 
     def execute(self, context):
         pref = getPreferences(context)
-        importCapture(context, self.filepath, self.max_blocks, pref)
+        try:
+            importCapture(context, self.filepath, self.max_blocks, pref)
+            error = None
+        except MapsModelsImportError as err:
+            error = err.args[0]
+        if error is not None:
+            self.report({'ERROR'}, error)
         return {'FINISHED'}
 
 

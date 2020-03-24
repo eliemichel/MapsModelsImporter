@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2020 Elie Michel
+# Copyright (c) 2019 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -28,6 +28,14 @@ import subprocess
 from .utils import getBinaryDir, makeTmpDir
 
 SCRIPT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "google_maps_rd.py")
+MSG_INCORRECT_RDC = """Invalid RDC capture file. Please make sure that:
+1. You are importing from Google Maps (NOT Google Earth)
+2. You were MOVING in the 3D view while taking the capture (you can use the Capture after delay button in RenderDoc).
+Please report to MapsModelsImporter developers providing the .rdc file as well as the full console log.
+Console log is accessible in Windows > Toggle System Console (right click to copy)."""
+
+class MapsModelsImportError(Exception):
+    pass
 
 def captureToFiles(filepath, prefix, max_blocks):
     """Extract binary files and textures from a RenderDoc capture file.
@@ -39,7 +47,13 @@ def captureToFiles(filepath, prefix, max_blocks):
     os.environ["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
     os.environ["PYTHONPATH"] += os.pathsep + os.path.abspath(getBinaryDir())
     python = os.path.join(python_home, "bin", "python.exe" if sys.platform == "win32" else "python3.7m") # warning: hardcoded python version for non-windows might fail with Blender update
-    subprocess.run([python, SCRIPT_PATH, filepath, prefix, str(max_blocks)])
+    try:
+        subprocess.check_output([python, SCRIPT_PATH, filepath, prefix, str(max_blocks)])
+        success = True
+    except subprocess.CalledProcessError as err:
+        success = False
+    if not success:
+        raise MapsModelsImportError(MSG_INCORRECT_RDC)
 
 # -----------------------------------------------------------------------------
 
@@ -77,7 +91,7 @@ def extractUniforms(constants, refMatrix):
         print("globUniforms:")
         for k, v in globUniforms.items():
             print("  {}: {}".format(k, v))
-        print("Capture file not supported. Please report to MapsModelsImporter developers providing the previous log line as well as the .rdc file.")
+        raise MapsModelsImportError(MSG_INCORRECT_RDC)
     
     matrix = Matrix([
         mdata[0:4],
@@ -170,7 +184,7 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
             continue
 
         uvOffsetScale, matrix, refMatrix = extractUniforms(constants, refMatrix)
-
+        
         # Make triangles from triangle strip index buffer
         n = len(indices)
         tris = [ [ indices[i+j] for j in [[0,1,2],[0,2,1]][i%2] ] for i in range(n - 3)]
@@ -193,12 +207,12 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
         drawcallId += 1
 
     # Save reference matrix
-    """
     if refMatrix:
         values = sum([list(v) for v in refMatrix], [])
         context.scene.maps_models_importer_ref_matrix = values
         context.scene.maps_models_importer_is_ref_matrix_valid = True
-    """
+
+    return None # no error
 
 # -----------------------------------------------------------------------------
 
