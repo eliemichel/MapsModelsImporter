@@ -90,11 +90,19 @@ This was a common issue with versions of this add-on prior to v0.2.0. Update to 
 
 ### Chrome is showing a warning about an unsupported feature
 
-If this is about the `--disable-gpu-sandbox` flag, it is just a warning, it should not be a problem.
+If chrome says something like "Unsupported command line, security will suffer", don't mind. This is due to the `--disable-gpu-sandbox` flag, but it is just a warning, it should not be a problem for what we are doing.
 
 ### Chrome window is all plain black
 
 Try to set and unset the fullscreen mode using F11.
+
+### There is no GPU pop-up
+
+Make sure you use the right custom shortcut to start chrome and that you closed any process chrome process before starting.
+
+### PrintScr does not actually take a capture
+
+It happens sometimes, in this case you can use the "Capture after delay" button in RenderDoc to trigger a capture. Don't forget to make sure to move in the 3D viewport at the very time the capture occurs.
 
 ### How to increase the level of detail?
 
@@ -104,6 +112,10 @@ If you want better quality captures, you should know that Google Maps loads LoDs
  - You can also use the rendering size percentage in Google Chrome. Most browsers do offer the option to zoom in or out the web pages (typically using Ctrl+Mouse Wheel) to adapt them to your screen resolution. By setting the zoom at e.g. 25% in Google Chrome, you increase the level of detail loaded by Google Maps.
 
 But while doing so you also increase dramatically the number of block. Be aware of the fact that by default the MapsModelsImporter add-on limits to 200 blocks to prevent from freezing for too long. You can change this number on import.
+
+### It's taking too long, how to automate this process?
+
+Although I don't know how to automate the capture itself, you can easily automate the importing part, see [this issue](https://github.com/eliemichel/MapsModelsImporter/issues/39) for an example of automation script.
 
 Disclaimer
 ----------
