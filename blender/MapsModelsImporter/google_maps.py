@@ -197,10 +197,12 @@ def filesToBlender(context, prefix, max_blocks=200):
         drawcallId += 1
 
     # Save reference matrix
+    """
     if refMatrix:
         values = sum([list(v) for v in refMatrix], [])
         context.scene.maps_models_importer_ref_matrix = values
         context.scene.maps_models_importer_is_ref_matrix_valid = True
+    """
 
 # -----------------------------------------------------------------------------
 
