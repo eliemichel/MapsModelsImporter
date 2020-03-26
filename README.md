@@ -39,7 +39,9 @@ set RENDERDOC_HOOK_EGL=0
 
   3. Do NOT press Ok on the dialog box yet;
 
-  4. In RenderDoc, search for the chrome process and inject into it;
+  4. In RenderDoc, search for chrome's GPU process and inject into it (you may use the search field);
+
+![Inject into the process called something like "chrome GPU"](doc/injection.png)
 
   5. Press OK in the chrome dialog;
 
