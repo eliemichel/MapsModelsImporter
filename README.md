@@ -86,6 +86,8 @@ With older versions (depreciated) of this add-on, you have to use a specific ver
 
 Try appending `?force=webgl` at the end of the google maps URL. Also, check that you enabled the Globe mode (an extra button on the right-hand side once you are in satellite mode).
 
+If it is not enough, you can try to change your region to United States because when you are localized in some other area, Google might chose to turn 3D off for some (political?) reason. See [this post](https://blenderartists.org/t/google-maps-models-importer/1153561/176).
+
 ### API: OpenGL (Not Presenting)
 
 This was a common issue with versions of this add-on prior to v0.2.0. Update to the latest version of this add-on, then make sure you remove the `--use-angle=gl` option from the chrome shortcut.
