@@ -92,6 +92,11 @@ If it is not enough, you can try to change your region to United States because 
 
 This was a common issue with versions of this add-on prior to v0.2.0. Update to the latest version of this add-on, then make sure you remove the `--use-angle=gl` option from the chrome shortcut.
 
+### API: None
+
+ - Make sure chrome was completely stopped before starting the custom shortcut
+ - Make sure you have hardware acceleration enabled in the advanced section of the chrome settings.
+
 ### Chrome is showing a warning about an unsupported feature
 
 If chrome says something like "Unsupported command line, security will suffer", don't mind. This is due to the `--disable-gpu-sandbox` flag, but it is just a warning, it should not be a problem for what we are doing.
