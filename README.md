@@ -122,9 +122,13 @@ If you want better quality captures, you should know that Google Maps loads LoDs
 
 But while doing so you also increase dramatically the number of block. Be aware of the fact that by default the MapsModelsImporter add-on limits to 200 blocks to prevent from freezing for too long. You can change this number on import.
 
+### How to stitch several captures together?
+
+You can use the [LilyCaptureMerger](https://gumroad.com/l/KSvXuu) add-on for this, here is a quick demo: https://www.youtube.com/watch?v=BcGM76dwF_s
+
 ### There are so many textures, it's impractical for export!
 
-You can check out the [LilyTexturePacker](https://gumroad.com/l/DFExj) add-on I've made especially for this.
+You can check out the [LilyTexturePacker](https://gumroad.com/l/DFExj) add-on I've made especially for this. Beware to use it only **after** using LilyTextureMerger, because the latter rely on individual block textures to perform matching.
 
 ### It's taking too long, how to automate this process?
 
