@@ -5,7 +5,7 @@
 Maps Models Importer
 ====================
 
-*Maps Models Importer* is a set of tools for importint 3D models from wide maps in 3D content softwares.
+*Maps Models Importer* is a set of tools for importing 3D models from wide maps in 3D content softwares.
 This is a proof of concept containing only a Blender add-on for importing 3D models from Google Maps.
 
 The `blender` directory contains the source code of the Blender add-on importing captures recorded with [RenderDoc](https://renderdoc.org/):
