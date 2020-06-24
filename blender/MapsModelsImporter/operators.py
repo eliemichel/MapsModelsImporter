@@ -45,7 +45,7 @@ class IMP_OP_GoogleMapsCapture(Operator, ImportHelper):
     max_blocks: IntProperty(
         name="Max Blocks",
         description="Maximum number of draw calls to load",
-        default=200,
+        default=-1,
     )
 
     def execute(self, context):
