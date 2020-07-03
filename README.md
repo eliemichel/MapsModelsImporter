@@ -15,13 +15,11 @@ The `blender` directory contains the source code of the Blender add-on importing
 Installation
 ------------
 
-Download a [release](https://github.com/eliemichel/MapsModelsImporter/releases) or make a zip of `blender/MapsModelsImporter/`. In Blender 2.82, go to `Edit > Preferences`, `Add-on`, `Install`, then browse to the zip file.
+Download a [release](https://github.com/eliemichel/MapsModelsImporter/releases) or make a zip of `blender/MapsModelsImporter/`. In Blender 2.83, go to `Edit > Preferences`, `Add-on`, `Install`, then browse to the zip file.
 
 **/!\ Do not use the "Download as zip" button of GitHub, make sure you use a release zip instead.**
 
-Install [RenderDoc](https://renderdoc.org/builds) **version 1.6**.
-
-NB: If you are using an older release (v0.1.x and before), you must use the portable version of RenderDoc 1.2 or RenderDoc 1.1. This is no longer the case since v0.2.0 of this add-on.
+Install [RenderDoc](https://renderdoc.org/builds), last version
 
 Usage
 -----
@@ -76,12 +74,6 @@ By default, the addon limits to 200 blocks, but if you feel ready to let your Bl
 
 Do NOT use the green "Clone or download" button of GitHub. I know it's tempting, but I cannot hide it, it's a GitHub feature. To get the proper zip, go to the [release page](https://github.com/eliemichel/MapsModelsImporter/releases/latest).
 
-### I don't want to uninstall Google Chrome...
-
-Since version v0.2.0 of this add-on, it is no longer needed to install an old version of Chrome.
-
-With older versions (depreciated) of this add-on, you have to use a specific version of Chrome. Check this trick out to install it alongside your current version: https://github.com/eliemichel/MapsModelsImporter/issues/15
-
 ### There is no option for 3D in Google Maps
 
 Try appending `?force=webgl` at the end of the google maps URL. Also, check that you enabled the Globe mode (an extra button on the right-hand side once you are in satellite mode).
@@ -90,7 +82,7 @@ If it is not enough, you can try to change your region to United States because 
 
 ### API: OpenGL (Not Presenting)
 
-This was a common issue with versions of this add-on prior to v0.2.0. Update to the latest version of this add-on, then make sure you remove the `--use-angle=gl` option from the chrome shortcut.
+This was a common issue with versions of this add-on prior to v0.2.0. Update to the latest version of this add-on, then make sure you remove the `--use-angle=gl` option from the chrome shortcut. You should get `API: D3D11`.
 
 ### API: None
 
