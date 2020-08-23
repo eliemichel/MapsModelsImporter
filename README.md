@@ -1,6 +1,5 @@
 *If this helps you save time or money for your job, please consider supporting the work involved in here ;)* [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=DNEEF8GDX2EV6&currency_code=EUR&source=url)
 
-**News** (from Feb 17, 2020) A new version is available that should make the whole process easier and work on more hardware. It now uses the last version of RenderDoc (1.6), the last version of Chrome (80) and the last version of Blender (2.82). This is quite a change and if you notice any regression (like it used to work and now it does not) please report!
 
 Maps Models Importer
 ====================
@@ -68,7 +67,7 @@ Unfortunately, the *inject into process* functionality of RenderDoc is not suppo
 
 ![Importer settings](doc/settings.png)
 
-By default, the addon limits to 200 blocks, but if you feel ready to let your Blender hang for a moment, you can increase it.
+The add-on can limit the number of imported blocks to prevent Blender from freezing too long. If not set to -1 or 0 (meaning no limit), there will be missing blocks in the imported scene, but it'll be quicker (good for testing pipelines, mostly).
 
 ### Blender does not want to install the add-on
 
@@ -127,6 +126,15 @@ You can check out the [LilyTexturePacker](https://gumroad.com/l/DFExj) add-on I'
 
 Although I don't know how to automate the capture itself, you can easily automate the importing part, see [this issue](https://github.com/eliemichel/MapsModelsImporter/issues/39) for an example of automation script.
 
+Notable use cases
+-----------------
+
+I think the most common use case is to sketch out blockings in early stages of architecture perspectives. Another interesting usage is to get a "ground truth" reference when doing match moving or motion tracking on raw footage.
+
+Artistic uses have been reported as well, for instance Benjamin Bardou has been using it to create [stunning](https://www.instagram.com/p/CEH9PAcCG3B/) [images](https://www.instagram.com/p/CENlPPVCVF0/) of Paris.
+
+Feel free to notify me of your use case on twitter [@exppad](https://twitter.com/exppad)!
+
 Disclaimer
 ----------
 
@@ -134,6 +142,16 @@ This is a proof of concept showcasing how the 3D render process of Google Maps c
 
 Do not use this for any commercial nor redistribution purpose. Actually, the use of such tool might be allowed for private read-only use, as this is what happens when browsing Google Maps, but not beyond. I do not take responsibility for any use of this tool.
 
+Changelog
+---------
+
+For more details, see individual [releases](https://github.com/eliemichel/MapsModelsImporter/releases).
+
+**Aug 23, 2020** *v0.3.0* Captures from Google Earth are now supported. When capturing from Google Earth, there is no need to move around in the viewport when taking the capture. Support for Google Maps is still ensured. Additional add-ons [LilyTexturePacker](https://gumroad.com/l/DFExj) and [LilyCaptureMerger](https://gumroad.com/l/KSvXuu) are compatible with Google Earth Captures.
+
+**Feb 17, 2020** *v0.2.0* A new version is available that should make the whole process easier and work on more hardware. It now uses the last version of RenderDoc (1.6), the last version of Chrome (80) and the last version of Blender (2.82). This is quite a change and if you notice any regression (like it used to work and now it does not) please report!
+
+**Mar 30, 2019** *v0.1.0* Initial release.
 
 Help Wanted
 -----------

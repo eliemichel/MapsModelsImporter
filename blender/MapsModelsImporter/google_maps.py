@@ -26,6 +26,7 @@ import os
 import subprocess
 
 from .utils import getBinaryDir, makeTmpDir
+from .preferences import getPreferences
 
 SCRIPT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "google_maps_rd.py")
 MSG_INCORRECT_RDC = """Invalid RDC capture file. Please make sure that:
@@ -37,9 +38,10 @@ Console log is accessible in Windows > Toggle System Console (right click to cop
 class MapsModelsImportError(Exception):
     pass
 
-def captureToFiles(filepath, prefix, max_blocks):
+def captureToFiles(context, filepath, prefix, max_blocks):
     """Extract binary files and textures from a RenderDoc capture file.
     This spawns a standalone Python interpreter because renderdoc module cannot be loaded in embedded Python"""
+    pref = getPreferences(context)
     blender_dir = os.path.dirname(sys.executable)
     blender_version = ("{0}.{1}").format(*bpy.app.version)
     python_home = os.path.join(blender_dir, blender_version, "python")
@@ -48,9 +50,15 @@ def captureToFiles(filepath, prefix, max_blocks):
     os.environ["PYTHONPATH"] += os.pathsep + os.path.abspath(getBinaryDir())
     python = os.path.join(python_home, "bin", "python.exe" if sys.platform == "win32" else "python3.7m") # warning: hardcoded python version for non-windows might fail with Blender update
     try:
-        subprocess.check_output([python, SCRIPT_PATH, filepath, prefix, str(max_blocks)])
+        out = subprocess.check_output([python, SCRIPT_PATH, filepath, prefix, str(max_blocks)], stderr=subprocess.STDOUT)
+        if pref.debug_info:
+            print("google_maps_rd returned:")
+            print(out.decode())
         success = True
     except subprocess.CalledProcessError as err:
+        if pref.debug_info:
+            print("google_maps_rd failed and returned:")
+            print(err.output.decode())
         success = False
     if not success:
         raise MapsModelsImportError(MSG_INCORRECT_RDC)
@@ -65,6 +73,14 @@ from math import floor, pi
 from mathutils import Matrix
 import os
 
+def makeMatrix(mdata):
+    return Matrix([
+        mdata[0:4],
+        mdata[4:8],
+        mdata[8:12],
+        mdata[12:16]
+    ]).transposed()
+
 def extractUniforms(constants, refMatrix):
     """Extract from constant buffer the model matrix and uv offset
     The reference matrix is used to cancel the view part of teh modelview matrix
@@ -77,29 +93,28 @@ def extractUniforms(constants, refMatrix):
         ov -= 1.0 / sv
         sv = -sv
         uvOffsetScale = [ou, ov, su, sv]
-        mdata = globUniforms['_s']
+        matrix = makeMatrix(globUniforms['_s'])
     elif 'webgl_fa7f624db8ab37d1' in globUniforms and 'webgl_3c7b7f37a9bd4c1d' in globUniforms:
         uvOffsetScale = globUniforms['webgl_fa7f624db8ab37d1']
-        mdata = globUniforms['webgl_3c7b7f37a9bd4c1d']
+        matrix = makeMatrix(globUniforms['webgl_3c7b7f37a9bd4c1d'])
     elif '_webgl_fa7f624db8ab37d1' in globUniforms and '_webgl_3c7b7f37a9bd4c1d' in globUniforms:
         [ou, ov, su, sv] = globUniforms['_webgl_fa7f624db8ab37d1']
         ov -= 1.0 / sv
         sv = -sv
         uvOffsetScale = [ou, ov, su, sv]
-        mdata = globUniforms['_webgl_3c7b7f37a9bd4c1d']
+        matrix = makeMatrix(globUniforms['_webgl_3c7b7f37a9bd4c1d'])
+    elif '_uMeshToWorldMatrix' in globUniforms:
+        # Google Earth
+        uvOffsetScale = [0, -1, 1, -1]
+        matrix = makeMatrix(globUniforms['_uMeshToWorldMatrix'])
+        matrix[3] = [0, 0, 0, 1]
+        #matrix = makeMatrix(globUniforms['_uModelviewMatrix']) @ matrix
     else:
         print("globUniforms:")
         for k, v in globUniforms.items():
             print("  {}: {}".format(k, v))
         raise MapsModelsImportError(MSG_INCORRECT_RDC)
     
-    matrix = Matrix([
-        mdata[0:4],
-        mdata[4:8],
-        mdata[8:12],
-        mdata[12:16]
-    ]).transposed()
-
     if refMatrix is None:
         # Rotate around Y because Google Maps uses X as up axis
         refMatrix = Matrix.Rotation(-pi/2, 4, 'Y') @ matrix.inverted()
@@ -162,10 +177,7 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
     """Import data from the files extracted by captureToFiles"""
     # Get reference matrix
     refMatrix = None
-    if context.scene.maps_models_importer_is_ref_matrix_valid:
-        values = context.scene.maps_models_importer_ref_matrix
-        refMatrix = Matrix((values[0:4], values[4:8], values[8:12], values[12:16]))
-
+    
     if max_blocks <= 0:
         # If no specific bound, max block is the number of .bin files in the directory
         max_blocks = len([file for file in os.listdir(os.path.dirname(prefix)) if file.endswith(".bin")])
@@ -187,12 +199,26 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
         
         # Make triangles from triangle strip index buffer
         n = len(indices)
-        tris = [ [ indices[i+j] for j in [[0,1,2],[0,2,1]][i%2] ] for i in range(n - 3)]
-        tris = [ t for t in tris if t[0] != t[1] and t[0] != t[2] and t[1] != t[2] ]
-        verts = [ [ p[0] * 256.0, p[1] * 256.0, p[2] * 256.0 ] for p in positions ]
+        if constants["DrawCall"]["topology"] == 'TRIANGLE_STRIP':
+            tris = [ [ indices[i+j] for j in [[0,1,2],[0,2,1]][i%2] ] for i in range(n - 3)]
+            tris = [ t for t in tris if t[0] != t[1] and t[0] != t[2] and t[1] != t[2] ]
+        else:
+            tris = [ [ indices[3*i+j] for j in range(3) ] for i in range(n//3) ]
+
+        if constants["DrawCall"]["type"] == 'Google Maps':
+            verts = [ [ p[0] * 256.0, p[1] * 256.0, p[2] * 256.0 ] for p in positions ]
+        else:
+            verts = [ [ p[0], p[1], p[2] ] for p in positions ]
 
         [ou, ov, su, sv] = uvOffsetScale
-        uvs = [ [ (floor(u * 65535.0 + 0.5) + ou) * su, (floor(v * 65535.0 + 0.5) + ov) * sv ] for u, v in uvs ]
+        if uvs and len(uvs[0]) > 2:
+            print(f"uvs[0][2] = {uvs[0][2]}")
+            uvs = [u[:2] for u in uvs]
+
+        if constants["DrawCall"]["type"] == 'Google Maps':
+            uvs = [ [ (floor(u * 65535.0 + 0.5) + ou) * su, (floor(v * 65535.0 + 0.5) + ov) * sv ] for u, v in uvs ]
+        else:
+            uvs = [ [ (u + ou) * su, (v + ov) * sv ] for u, v in uvs ]
 
         if len(indices) == 0:
             continue
@@ -218,5 +244,5 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
 
 def importCapture(context, filepath, max_blocks, pref):
     prefix = makeTmpDir(pref, filepath)
-    captureToFiles(filepath, prefix, max_blocks)
+    captureToFiles(context, filepath, prefix, max_blocks)
     filesToBlender(context, prefix, max_blocks)

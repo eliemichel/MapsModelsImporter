@@ -43,11 +43,18 @@ class MapsModelsAddonPreferences(bpy.types.AddonPreferences):
         default="",
         )
 
+    debug_info: bpy.props.BoolProperty(
+        name="Debug Info",
+        default=False,
+        )
+
     def draw(self, context):
         layout = self.layout
         layout.label(text="The temporary directory is used for intermediate files and for textures.")
         layout.label(text="It can get heavy. If left empty, the capture file's directory is used.")
         layout.prop(self, "tmp_dir")
+        layout.label(text="Turn on extra debug info:")
+        layout.prop(self, "debug_info")
 
 # -----------------------------------------------------------------------------
 

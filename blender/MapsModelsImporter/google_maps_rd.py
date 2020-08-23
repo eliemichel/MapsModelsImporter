@@ -34,92 +34,36 @@ MAX_BLOCKS = int(MAX_BLOCKS_STR)
 
 # Start chrome with "chrome.exe --disable-gpu-sandbox --gpu-startup-dialog --use-angle=gl"
 
-def list_relevant_calls(drawcalls, _strategy=0):
-    """List the drawcalls related to drawing the 3D meshes thank to a ad hoc heuristic
-    It may different in RenderDoc UI and in Python module, for some reason
-    """
-    first_call = ""
-    last_call = "glDrawArrays(4)"
-    drawcall_prefix = "glDrawElements"
-    if _strategy == 0:
-        first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <1.000000>)"
-    elif _strategy == 1:
-        first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <1.000000>, Stencil = <0x00>)"
-    elif _strategy == 2:
-        first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <0.000000>)"
-    elif _strategy == 3:
-        first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <0.000000>, Stencil = <0x00>)"
-    elif _strategy == 4:
-        first_call = "ClearRenderTargetView(0.000000, 0.000000, 0.000000"
-        last_call = "Draw(4)"
-        drawcall_prefix = "DrawIndexed"
-    elif _strategy == 5:
-        first_call = "" # Try from the beginning on
-        last_call = "Draw(4)"
-        drawcall_prefix = "DrawIndexed"
-    else:
-        print("Error: Could not find the beginning of the relevant 3D draw calls")
-        return [], "none"
-    relevant_drawcalls = []
-    is_relevant = False
-    for draw in drawcalls:
-        if is_relevant:
-            if draw.name.startswith(last_call) and relevant_drawcalls != []:
-                break
-            if not draw.name.startswith(drawcall_prefix):
-                print("(Skipping drawcall {})".format(draw.name))
-                continue
-            relevant_drawcalls.append(draw)
-        if draw.name.startswith(first_call):
-            is_relevant = True
+class CaptureScraper():
+    def __init__(self, controller):
+        self.controller = controller
 
-    if not relevant_drawcalls:
-        relevant_drawcalls, drawcall_prefix = list_relevant_calls(drawcalls, _strategy=_strategy+1)
+    def findDrawcallBatch(self, drawcalls, first_call_prefix, drawcall_prefix, last_call_prefix):
+        batch = []
+        has_batch_started = False
+        for last_call_index, draw in enumerate(drawcalls):
+            if has_batch_started:
+                if not draw.name.startswith(drawcall_prefix):
+                    if draw.name.startswith(last_call_prefix) and batch != []:
+                        break
+                    else:
+                        print("(Skipping drawcall {})".format(draw.name))
+                        continue
+                batch.append(draw)
+            else:
+            	print(f"Not relevant yet: {draw.name}")
+            if draw.name.startswith(first_call_prefix):
+                has_batch_started = True
+                if draw.name.startswith(drawcall_prefix):
+                    batch.append(draw)
+        return batch, last_call_index
 
-    return relevant_drawcalls, drawcall_prefix
+    def getVertexShaderConstants(self, draw, state=None):
+        controller = self.controller
+        if state is None:
+            controller.SetFrameEvent(draw.eventId, True)
+            state = controller.GetPipelineState()
 
-def main(controller):
-    drawcalls = controller.GetDrawcalls()
-    relevant_drawcalls, drawcall_prefix = list_relevant_calls(drawcalls)
-
-    if MAX_BLOCKS <= 0:
-        max_drawcall = len(relevant_drawcalls)
-    else:
-        max_drawcall = min(MAX_BLOCKS, len(relevant_drawcalls))
-
-    for drawcallId, draw in enumerate(relevant_drawcalls[:max_drawcall]):
-        print("Draw call: " + draw.name)
-        
-        controller.SetFrameEvent(draw.eventId, True)
-        state = controller.GetPipelineState()
-
-        ib = state.GetIBuffer()
-        vbs = state.GetVBuffers()
-        attrs = state.GetVertexInputs()
-        meshes = [makeMeshData(attr, ib, vbs, draw) for attr in attrs]
-
-        try:
-            # Position
-            m = meshes[0]
-            m.fetchTriangle(controller)
-            indices = m.fetchIndices(controller)
-            with open("{}{:05d}-indices.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
-                pickle.dump(indices, file)
-            unpacked = m.fetchData(controller)
-            with open("{}{:05d}-positions.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
-                pickle.dump(unpacked, file)
-
-            # UV
-            m = meshes[1]
-            m.fetchTriangle(controller)
-            unpacked = m.fetchData(controller)
-            with open("{}{:05d}-uv.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
-                pickle.dump(unpacked, file)
-        except RuntimeError as err:
-            print("(Skipping: {})".format(err))
-            continue
-
-        # Vertex Shader Constants
         shader = state.GetShader(rd.ShaderStage.Vertex)
         ep = state.GetShaderEntryPoint(rd.ShaderStage.Vertex)
         ref = state.GetShaderReflection(rd.ShaderStage.Vertex)
@@ -159,23 +103,135 @@ def main(controller):
                     # ...
                 block[var.name] = val
             constants[cb.name] = block
-        with open("{}{:05d}-constants.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
-            pickle.dump(constants, file)
+        return constants
 
-        # Texture
-        # dirty
-        bindpoints = state.GetBindpointMapping(rd.ShaderStage.Fragment)
-        texture_bind = bindpoints.samplers[-1].bind
-        resources = state.GetReadOnlyResources(rd.ShaderStage.Fragment)
-        rid = resources[texture_bind].resources[0].resourceId
+    def hasUniform(self, draw, uniform):
+        constants = self.getVertexShaderConstants(draw)
+        return uniform in constants['$Globals']
+
+    def extractRelevantCalls(self, drawcalls, _strategy=0):
+        """List the drawcalls related to drawing the 3D meshes thank to a ad hoc heuristic
+        It may different in RenderDoc UI and in Python module, for some reason
+        """
+        first_call = ""
+        last_call = "glDrawArrays(4)"
+        drawcall_prefix = "glDrawElements"
+        min_drawcall = 0
+        capture_type = "Google Maps"
+        if _strategy == 0:
+            first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <1.000000>)"
+        elif _strategy == 1:
+            first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <1.000000>, Stencil = <0x00>)"
+        elif _strategy == 2:
+            first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <0.000000>)"
+        elif _strategy == 3:
+            first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <0.000000>, Stencil = <0x00>)"
+        elif _strategy == 4:
+        	# With Google Earth there are two batches of DrawIndexed calls, we are interested in the second one
+            first_call = "DrawIndexed"
+            last_call = ""
+            drawcall_prefix = "DrawIndexed"
+            capture_type = "Google Earth"
+            skipped_drawcalls, min_drawcall = self.findDrawcallBatch(drawcalls, first_call, drawcall_prefix, last_call)
+            if not skipped_drawcalls or not self.hasUniform(skipped_drawcalls[0], "_uProjModelviewMatrix"):
+                first_call = "INVALID CASE, SKIP ME"
+        elif _strategy == 5:
+            first_call = "ClearRenderTargetView(0.000000, 0.000000, 0.000000"
+            last_call = "Draw(4)"
+            drawcall_prefix = "DrawIndexed"
+        elif _strategy == 6:
+            first_call = "" # Try from the beginning on
+            last_call = "Draw(4)"
+            drawcall_prefix = "DrawIndexed"
+        else:
+            print("Error: Could not find the beginning of the relevant 3D draw calls")
+            return [], "none"
+
+        print(f"Trying scrapping strategy #{_strategy}...")
+        relevant_drawcalls, _ = self.findDrawcallBatch(
+            drawcalls[min_drawcall:],
+            first_call,
+            drawcall_prefix,
+            last_call)
         
-        texsave = rd.TextureSave()
-        texsave.resourceId = rid
-        texsave.mip = 0
-        texsave.slice.sliceIndex = 0
-        texsave.alpha = rd.AlphaMapping.Preserve
-        texsave.destType = rd.FileType.PNG
-        controller.SaveTexture(texsave, "{}{:05d}-texture.png".format(FILEPREFIX, drawcallId))
+        if not relevant_drawcalls:
+            return self.extractRelevantCalls(drawcalls, _strategy=_strategy+1)
+
+        return relevant_drawcalls, capture_type
+
+    def run(self):
+        controller = self.controller
+        drawcalls = controller.GetDrawcalls()
+        relevant_drawcalls, capture_type = self.extractRelevantCalls(drawcalls)
+        print(f"Scrapping capture from {capture_type}...")
+
+        if MAX_BLOCKS <= 0:
+            max_drawcall = len(relevant_drawcalls)
+        else:
+            max_drawcall = min(MAX_BLOCKS, len(relevant_drawcalls))
+
+        for drawcallId, draw in enumerate(relevant_drawcalls[:max_drawcall]):
+            print("Draw call: " + draw.name)
+            
+            controller.SetFrameEvent(draw.eventId, True)
+            state = controller.GetPipelineState()
+
+            ib = state.GetIBuffer()
+            vbs = state.GetVBuffers()
+            attrs = state.GetVertexInputs()
+            meshes = [makeMeshData(attr, ib, vbs, draw) for attr in attrs]
+
+            try:
+                # Position
+                m = meshes[0]
+                m.fetchTriangle(controller)
+                indices = m.fetchIndices(controller)
+                with open("{}{:05d}-indices.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
+                    pickle.dump(indices, file)
+                unpacked = m.fetchData(controller)
+                with open("{}{:05d}-positions.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
+                    pickle.dump(unpacked, file)
+
+                # UV
+                m = meshes[2 if capture_type == "Google Earth" else 1]
+                m.fetchTriangle(controller)
+                unpacked = m.fetchData(controller)
+                with open("{}{:05d}-uv.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
+                    pickle.dump(unpacked, file)
+            except RuntimeError as err:
+                print("(Skipping: {})".format(err))
+                continue
+
+            # Vertex Shader Constants
+            shader = state.GetShader(rd.ShaderStage.Vertex)
+            ep = state.GetShaderEntryPoint(rd.ShaderStage.Vertex)
+            ref = state.GetShaderReflection(rd.ShaderStage.Vertex)
+            constants = self.getVertexShaderConstants(draw, state=state)
+            constants["DrawCall"] = {
+                "topology": 'TRIANGLE_STRIP' if draw.topology == rd.Topology.TriangleStrip else 'TRIANGLES',
+                "type": capture_type
+            }
+            with open("{}{:05d}-constants.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
+                pickle.dump(constants, file)
+
+            # Texture
+            # dirty
+            bindpoints = state.GetBindpointMapping(rd.ShaderStage.Fragment)
+            texture_bind = bindpoints.samplers[-1].bind
+            resources = state.GetReadOnlyResources(rd.ShaderStage.Fragment)
+            rid = resources[texture_bind].resources[0].resourceId
+            
+            texsave = rd.TextureSave()
+            texsave.resourceId = rid
+            texsave.mip = 0
+            texsave.slice.sliceIndex = 0
+            texsave.alpha = rd.AlphaMapping.Preserve
+            texsave.destType = rd.FileType.PNG
+            controller.SaveTexture(texsave, "{}{:05d}-texture.png".format(FILEPREFIX, drawcallId))
+
+def main(controller):
+    scraper = CaptureScraper(controller)
+    scraper.run()
 
 if __name__ == "__main__":
     if 'pyrenderdoc' in globals():
