@@ -132,7 +132,7 @@ Notable use cases
 
 I think the most common use case is to sketch out blockings in early stages of architecture perspectives. Another interesting usage is to get a "ground truth" reference when doing match moving or motion tracking on raw footage.
 
-Artistic uses have been reported as well, for instance Benjamin Bardou has been using it to create [stunning](https://www.instagram.com/p/CEH9PAcCG3B/) [images](https://www.instagram.com/p/CENlPPVCVF0/) of Paris.
+Artistic uses have been reported as well, for instance [Benjamin Bardou](https://benjaminbardou.com) has been using it to create [stunning](https://www.instagram.com/p/CEH9PAcCG3B/) [images](https://www.instagram.com/p/CENlPPVCVF0/) of Paris.
 
 Feel free to notify me of your use case on twitter [@exppad](https://twitter.com/exppad)!
 
