@@ -88,6 +88,7 @@ def extractUniforms(constants, refMatrix):
 
     # Extract constants, which have different names depending on the browser/GPU driver
     globUniforms = constants['$Globals']
+    postMatrix = None
     if '_w' in globUniforms and '_s' in globUniforms:
         [ou, ov, su, sv] = globUniforms['_w']
         ov -= 1.0 / sv
@@ -109,6 +110,16 @@ def extractUniforms(constants, refMatrix):
         matrix = makeMatrix(globUniforms['_uMeshToWorldMatrix'])
         matrix[3] = [0, 0, 0, 1]
         #matrix = makeMatrix(globUniforms['_uModelviewMatrix']) @ matrix
+    elif '_uMV' in globUniforms:
+        # Mapy CZ
+        uvOffsetScale = [0, -1, 1, -1]
+        matrix = makeMatrix(globUniforms['_uMV'])
+        postMatrix = Matrix(
+            ((0.682889997959137, 0.20221230387687683, 0.7019768357276917, -0.06431722640991211),
+            (0.07228320091962814, 0.9375065565109253, -0.3403771221637726, -0.11041564494371414),
+            (-0.7269363403320312, 0.28318125009536743, 0.6255972981452942, -1.349690556526184),
+            (0.0, 0.0, 0.0, 1.0))
+            ) @ Matrix.Scale(500, 4)
     else:
         if refMatrix is None:
             print("globUniforms:")
@@ -122,6 +133,9 @@ def extractUniforms(constants, refMatrix):
         # Rotate around Y because Google Maps uses X as up axis
         refMatrix = Matrix.Rotation(-pi/2, 4, 'Y') @ matrix.inverted()
     matrix = refMatrix @ matrix
+
+    if postMatrix is not None:
+        matrix = postMatrix @ matrix
 
     return uvOffsetScale, matrix, refMatrix
 

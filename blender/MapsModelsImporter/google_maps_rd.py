@@ -127,6 +127,11 @@ class CaptureScraper():
         elif _strategy == 3:
             first_call = "glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>, Depth = <0.000000>, Stencil = <0x00>)"
         elif _strategy == 4:
+            first_call = ""
+            last_call = "ClearDepthStencilView"
+            drawcall_prefix = "DrawIndexed"
+            capture_type = "Mapy CZ"
+        elif _strategy == 5:
         	# With Google Earth there are two batches of DrawIndexed calls, we are interested in the second one
             first_call = "DrawIndexed"
             last_call = ""
@@ -135,11 +140,11 @@ class CaptureScraper():
             skipped_drawcalls, min_drawcall = self.findDrawcallBatch(drawcalls, first_call, drawcall_prefix, last_call)
             if not skipped_drawcalls or not self.hasUniform(skipped_drawcalls[0], "_uProjModelviewMatrix"):
                 first_call = "INVALID CASE, SKIP ME"
-        elif _strategy == 5:
+        elif _strategy == 6:
             first_call = "ClearRenderTargetView(0.000000, 0.000000, 0.000000"
             last_call = "Draw(4)"
             drawcall_prefix = "DrawIndexed"
-        elif _strategy == 6:
+        elif _strategy == 7:
             first_call = "" # Try from the beginning on
             last_call = "Draw(4)"
             drawcall_prefix = "DrawIndexed"
@@ -155,6 +160,9 @@ class CaptureScraper():
             last_call)
         
         if not relevant_drawcalls:
+            return self.extractRelevantCalls(drawcalls, _strategy=_strategy+1)
+
+        if capture_type == "Mapy CZ" and not self.hasUniform(relevant_drawcalls[0], "_uMV"):
             return self.extractRelevantCalls(drawcalls, _strategy=_strategy+1)
 
         return relevant_drawcalls, capture_type
