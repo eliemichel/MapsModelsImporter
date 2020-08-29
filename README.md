@@ -1,6 +1,6 @@
 *If this helps you save time or money for your job, please consider supporting the work involved in here ;)* [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=DNEEF8GDX2EV6&currency_code=EUR&source=url)
 
-**News** As of Aug 23, 2020, **Google Earth** is now supported on top of Google Maps!
+**News** As of Aug 23, 2020, [**Google Earth** web](https://earth.google.com/web/) is now supported on top of Google Maps!
 
 Maps Models Importer
 ====================
@@ -132,7 +132,7 @@ Notable use cases
 
 I think the most common use case is to sketch out blockings in early stages of architecture perspectives. Another interesting usage is to get a "ground truth" reference when doing match moving or motion tracking on raw footage.
 
-Artistic uses have been reported as well, for instance Benjamin Bardou has been using it to create [stunning](https://www.instagram.com/p/CEH9PAcCG3B/) [images](https://www.instagram.com/p/CENlPPVCVF0/) of Paris.
+Artistic uses have been reported as well, for instance [Benjamin Bardou](https://benjaminbardou.com) has been using it to create [stunning](https://www.instagram.com/p/CEH9PAcCG3B/) [images](https://www.instagram.com/p/CENlPPVCVF0/) of Paris.
 
 Feel free to notify me of your use case on twitter [@exppad](https://twitter.com/exppad)!
 
