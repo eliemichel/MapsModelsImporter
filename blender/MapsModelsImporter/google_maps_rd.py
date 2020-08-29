@@ -198,7 +198,7 @@ class CaptureScraper():
                 unpacked = m.fetchData(controller)
                 with open("{}{:05d}-uv.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
                     pickle.dump(unpacked, file)
-            except RuntimeError as err:
+            except Exception as err:
                 print("(Skipping: {})".format(err))
                 continue
 

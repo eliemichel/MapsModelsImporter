@@ -110,10 +110,13 @@ def extractUniforms(constants, refMatrix):
         matrix[3] = [0, 0, 0, 1]
         #matrix = makeMatrix(globUniforms['_uModelviewMatrix']) @ matrix
     else:
-        print("globUniforms:")
-        for k, v in globUniforms.items():
-            print("  {}: {}".format(k, v))
-        raise MapsModelsImportError(MSG_INCORRECT_RDC)
+        if refMatrix is None:
+            print("globUniforms:")
+            for k, v in globUniforms.items():
+                print("  {}: {}".format(k, v))
+            raise MapsModelsImportError(MSG_INCORRECT_RDC)
+        else:
+            return None, None, None
     
     if refMatrix is None:
         # Rotate around Y because Google Maps uses X as up axis
@@ -154,19 +157,19 @@ def addImageMaterial(name, obj, img):
     links = mat.node_tree.links
     link = links.new(texture_node.outputs[0], principled.inputs[0])
 
-def loadData(prefix, drawcallId):
-    with open("{}{:05d}-indices.bin".format(prefix, drawcallId), 'rb') as file:
+def loadData(prefix, drawcall_id):
+    with open("{}{:05d}-indices.bin".format(prefix, drawcall_id), 'rb') as file:
         indices = pickle.load(file)
 
-    with open("{}{:05d}-positions.bin".format(prefix, drawcallId), 'rb') as file:
+    with open("{}{:05d}-positions.bin".format(prefix, drawcall_id), 'rb') as file:
         positions = pickle.load(file)
 
-    with open("{}{:05d}-uv.bin".format(prefix, drawcallId), 'rb') as file:
+    with open("{}{:05d}-uv.bin".format(prefix, drawcall_id), 'rb') as file:
         uvs = pickle.load(file)
 
-    img = bpy.data.images.load("{}{:05d}-texture.png".format(prefix, drawcallId))
+    img = bpy.data.images.load("{}{:05d}-texture.png".format(prefix, drawcall_id))
 
-    with open("{}{:05d}-constants.bin".format(prefix, drawcallId), 'rb') as file:
+    with open("{}{:05d}-constants.bin".format(prefix, drawcall_id), 'rb') as file:
         constants = pickle.load(file)
 
     return indices, positions, uvs, img, constants
@@ -182,20 +185,23 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
         # If no specific bound, max block is the number of .bin files in the directory
         max_blocks = len([file for file in os.listdir(os.path.dirname(prefix)) if file.endswith(".bin")])
 
-    drawcallId = 0
-    while drawcallId < max_blocks:
-        if not os.path.isfile("{}{:05d}-indices.bin".format(prefix, drawcallId)):
-            drawcallId += 1
+    drawcall_id = 0
+    while drawcall_id < max_blocks:
+        if not os.path.isfile("{}{:05d}-indices.bin".format(prefix, drawcall_id)):
+            drawcall_id += 1
             continue
 
         try:
-            indices, positions, uvs, img, constants = loadData(prefix, drawcallId)
+            indices, positions, uvs, img, constants = loadData(prefix, drawcall_id)
         except FileNotFoundError as err:
             print("Skipping ({})".format(err))
-            drawcallId += 1
+            drawcall_id += 1
             continue
 
         uvOffsetScale, matrix, refMatrix = extractUniforms(constants, refMatrix)
+        if uvOffsetScale is None:
+            drawcall_id += 1
+            continue
         
         # Make triangles from triangle strip index buffer
         n = len(indices)
@@ -223,14 +229,14 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
         if len(indices) == 0:
             continue
 
-        mesh_name = "BuildingMesh-{:05d}".format(drawcallId)
+        mesh_name = "BuildingMesh-{:05d}".format(drawcall_id)
         obj = addMesh(context, mesh_name, verts, tris, uvs)
         obj.matrix_world = matrix * globalScale
 
-        mat_name = "BuildingMat-{:05d}".format(drawcallId)
+        mat_name = "BuildingMat-{:05d}".format(drawcall_id)
         addImageMaterial(mat_name, obj, img)
 
-        drawcallId += 1
+        drawcall_id += 1
 
     # Save reference matrix
     if refMatrix:
