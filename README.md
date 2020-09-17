@@ -2,6 +2,8 @@
 
 **News** As of Aug 23, 2020, [**Google Earth** web](https://earth.google.com/web/) is now supported on top of Google Maps!
 
+**News** And since Aug 29, 2020, [**Mapy CZ**](https://mapy.cz) as well!
+
 Maps Models Importer
 ====================
 
