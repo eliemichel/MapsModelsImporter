@@ -200,15 +200,20 @@ class CaptureScraper():
             meshes = [makeMeshData(attr, ib, vbs, draw) for attr in attrs]
 
             try:
+                if len(meshes) < 2:
+                    continue
                 # Position
                 m = meshes[0]
                 m.fetchTriangle(controller)
+                unpacked = m.fetchData(controller)
+                if len(unpacked) < 1 or len(unpacked[0]) < 3:
+                    continue
+                with open("{}{:05d}-positions.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
+                    pickle.dump(unpacked, file)
                 indices = m.fetchIndices(controller)
                 with open("{}{:05d}-indices.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
                     pickle.dump(indices, file)
-                unpacked = m.fetchData(controller)
-                with open("{}{:05d}-positions.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
-                    pickle.dump(unpacked, file)
+                
 
                 # UV
                 m = meshes[2 if capture_type == "Google Earth" else 1]
@@ -219,6 +224,17 @@ class CaptureScraper():
             except Exception as err:
                 print("(Skipping: {})".format(err))
                 continue
+
+            # Texture
+            # dirty
+            bindpoints = state.GetBindpointMapping(rd.ShaderStage.Fragment)
+            if len(bindpoints.samplers) > 1:
+                capture_type = 'SeoulMap'
+                texture_bind = bindpoints.samplers[0].bind
+            else:
+                texture_bind = bindpoints.samplers[-1].bind
+            resources = state.GetReadOnlyResources(rd.ShaderStage.Fragment)
+            rid = resources[texture_bind].resources[0].resourceId
 
             # Vertex Shader Constants
             shader = state.GetShader(rd.ShaderStage.Vertex)
@@ -231,13 +247,6 @@ class CaptureScraper():
             }
             with open("{}{:05d}-constants.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
                 pickle.dump(constants, file)
-
-            # Texture
-            # dirty
-            bindpoints = state.GetBindpointMapping(rd.ShaderStage.Fragment)
-            texture_bind = bindpoints.samplers[-1].bind
-            resources = state.GetReadOnlyResources(rd.ShaderStage.Fragment)
-            rid = resources[texture_bind].resources[0].resourceId
             
             texsave = rd.TextureSave()
             texsave.resourceId = rid

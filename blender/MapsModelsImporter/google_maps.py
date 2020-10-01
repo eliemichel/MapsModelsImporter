@@ -70,7 +70,7 @@ import bmesh
 import pickle
 from bpy_extras import object_utils
 from math import floor, pi
-from mathutils import Matrix
+from mathutils import Matrix, Vector
 import os
 
 def makeMatrix(mdata):
@@ -120,6 +120,11 @@ def extractUniforms(constants, refMatrix):
             (-0.7269363403320312, 0.28318125009536743, 0.6255972981452942, -1.349690556526184),
             (0.0, 0.0, 0.0, 1.0))
             ) @ Matrix.Scale(500, 4)
+    elif '_f' in globUniforms or '_i' in globUniforms:
+        # Google Chrome 85.0.4183.121 (64bit), RendorDoc 1.9, RTX 3090, https://smap.seoul.go.kr/
+        uvOffsetScale = [0, 0, 1/65535., 1/65535.]
+        matrix = makeMatrix(globUniforms['_f'])
+        postMatrix = Matrix.Scale(3, 4, Vector((1.0, 0., 0.)))
     else:
         if refMatrix is None:
             print("globUniforms:")
@@ -130,8 +135,12 @@ def extractUniforms(constants, refMatrix):
             return None, None, None
     
     if refMatrix is None:
-        # Rotate around Y because Google Maps uses X as up axis
-        refMatrix = Matrix.Rotation(-pi/2, 4, 'Y') @ matrix.inverted()
+        if '_f' in globUniforms or '_i' in globUniforms:
+            # Rotate around Z, upside down for SMAP
+            refMatrix = Matrix.Rotation(-pi, 4, 'Z') @ matrix.inverted()
+        else:
+            # Rotate around Y because Google Maps uses X as up axis
+            refMatrix = Matrix.Rotation(-pi/2, 4, 'Y') @ matrix.inverted()
     matrix = refMatrix @ matrix
 
     if postMatrix is not None:
@@ -190,7 +199,7 @@ def loadData(prefix, drawcall_id):
 
 # -----------------------------------------------------------------------------
 
-def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
+def filesToBlender(context, prefix, max_blocks=200):
     """Import data from the files extracted by captureToFiles"""
     # Get reference matrix
     refMatrix = None
@@ -245,6 +254,9 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
 
         mesh_name = "BuildingMesh-{:05d}".format(drawcall_id)
         obj = addMesh(context, mesh_name, verts, tris, uvs)
+        globalScale=1.0/256.0
+        if constants["DrawCall"]["type"] == 'SeoulMap':
+            globalScale=1.0
         obj.matrix_world = matrix * globalScale
 
         mat_name = "BuildingMat-{:05d}".format(drawcall_id)
