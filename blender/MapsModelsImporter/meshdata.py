@@ -44,7 +44,7 @@ def fmt2struct(fmt):
         rd.CompType.UScaled: uintfmt,
         rd.CompType.SNorm:   sintfmt,
         rd.CompType.SScaled: sintfmt,
-        rd.CompType.Double:  floatfmt,
+        #rd.CompType.Double:  floatfmt,
     }
     return str(fmt.compCount) + formatChars[fmt.compType][fmt.compByteWidth]
 

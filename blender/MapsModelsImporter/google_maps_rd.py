@@ -75,6 +75,7 @@ class CaptureScraper():
                 ep,
                 cb.bindPoint,
                 cbuff.resourceId,
+                0,
                 0
             )
             for var in variables:
@@ -217,7 +218,7 @@ class CaptureScraper():
                 with open("{}{:05d}-uv.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
                     pickle.dump(unpacked, file)
             except Exception as err:
-                print("(Skipping: {})".format(err))
+                print("(Skipping because of error: {})".format(err))
                 continue
 
             # Vertex Shader Constants
