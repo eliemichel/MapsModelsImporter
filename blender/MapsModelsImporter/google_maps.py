@@ -30,7 +30,7 @@ from .preferences import getPreferences
 
 SCRIPT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "google_maps_rd.py")
 MSG_INCORRECT_RDC = """Invalid RDC capture file. Please make sure that:
-1. You are importing from Google Maps (NOT Google Earth)
+1. You are importing from Google Maps or Google Earth web
 2. You were MOVING in the 3D view while taking the capture (you can use the Capture after delay button in RenderDoc).
 Please report to MapsModelsImporter developers providing the .rdc file as well as the full console log.
 Console log is accessible in Windows > Toggle System Console (right click to copy)."""
@@ -166,10 +166,11 @@ def addImageMaterial(name, obj, img):
     principled = nodes["Principled BSDF"]
     principled.inputs["Specular"].default_value = 0.0
     principled.inputs["Roughness"].default_value = 1.0
-    texture_node = nodes.new(type="ShaderNodeTexImage")
-    texture_node.image = img
-    links = mat.node_tree.links
-    link = links.new(texture_node.outputs[0], principled.inputs[0])
+    if img is not None:
+        texture_node = nodes.new(type="ShaderNodeTexImage")
+        texture_node.image = img
+        links = mat.node_tree.links
+        link = links.new(texture_node.outputs[0], principled.inputs[0])
 
 def loadData(prefix, drawcall_id):
     with open("{}{:05d}-indices.bin".format(prefix, drawcall_id), 'rb') as file:
@@ -181,7 +182,11 @@ def loadData(prefix, drawcall_id):
     with open("{}{:05d}-uv.bin".format(prefix, drawcall_id), 'rb') as file:
         uvs = pickle.load(file)
 
-    img = bpy.data.images.load("{}{:05d}-texture.png".format(prefix, drawcall_id))
+    texture_filename = "{}{:05d}-texture.png".format(prefix, drawcall_id)
+    if os.path.isfile(texture_filename):
+        img = bpy.data.images.load(texture_filename)
+    else:
+        img = None
 
     with open("{}{:05d}-constants.bin".format(prefix, drawcall_id), 'rb') as file:
         constants = pickle.load(file)

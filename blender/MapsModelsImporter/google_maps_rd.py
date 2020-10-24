@@ -233,20 +233,25 @@ class CaptureScraper():
             with open("{}{:05d}-constants.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
                 pickle.dump(constants, file)
 
-            # Texture
-            # dirty
-            bindpoints = state.GetBindpointMapping(rd.ShaderStage.Fragment)
-            texture_bind = bindpoints.samplers[-1].bind
-            resources = state.GetReadOnlyResources(rd.ShaderStage.Fragment)
-            rid = resources[texture_bind].resources[0].resourceId
-            
-            texsave = rd.TextureSave()
-            texsave.resourceId = rid
-            texsave.mip = 0
-            texsave.slice.sliceIndex = 0
-            texsave.alpha = rd.AlphaMapping.Preserve
-            texsave.destType = rd.FileType.PNG
-            controller.SaveTexture(texsave, "{}{:05d}-texture.png".format(FILEPREFIX, drawcallId))
+            self.extractTexture(drawcallId, state)
+
+    def extractTexture(self, drawcallId, state):
+        """Save the texture in a png file (A bit dirty)"""
+        bindpoints = state.GetBindpointMapping(rd.ShaderStage.Fragment)
+        if not bindpoints.samplers:
+            print(f"Warning: No texture found for drawcall {drawcallId}")
+            return
+        texture_bind = bindpoints.samplers[-1].bind
+        resources = state.GetReadOnlyResources(rd.ShaderStage.Fragment)
+        rid = resources[texture_bind].resources[0].resourceId
+    
+        texsave = rd.TextureSave()
+        texsave.resourceId = rid
+        texsave.mip = 0
+        texsave.slice.sliceIndex = 0
+        texsave.alpha = rd.AlphaMapping.Preserve
+        texsave.destType = rd.FileType.PNG
+        controller.SaveTexture(texsave, "{}{:05d}-texture.png".format(FILEPREFIX, drawcallId))
 
 def main(controller):
     scraper = CaptureScraper(controller)
