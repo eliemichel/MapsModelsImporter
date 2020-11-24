@@ -21,10 +21,25 @@
 # This file is part of MapsModelsImporter, a set of addons to import 3D models
 # from Maps services
 
+MSG_RD_IMPORT_FAILED = """Error: Failed to load the RenderDoc module. It however seems to exist.
+This is most likely due to your Blender version uses another version of python. It might also be that a additional file is missing (i.E. DLL)
+Remember, you must use exactly the same version of python to load the RenderDoc module as was used to build it.\n"""
+
 import sys
 import pickle
 import struct
-import renderdoc as rd
+try:
+    import renderdoc as rd
+except ModuleNotFoundError as err:
+    print("Error: Can't find RenderDoc library.")
+    print("sys.path contains the following paths:\n")
+    print(*sys.path, sep = "\n")
+except ImportError as err:
+    print(MSG_RD_IMPORT_FAILED)
+    print("Python version used by your Blender installation: ",sys.version)
+    print("err.name: ",err.name)
+    print("err.path: ",err.path)
+    print("Error Message: ", err,"\n")
 
 from meshdata import MeshData, makeMeshData
 from rdutils import CaptureWrapper

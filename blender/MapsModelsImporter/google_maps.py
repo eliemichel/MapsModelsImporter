@@ -57,9 +57,13 @@ def captureToFiles(context, filepath, prefix, max_blocks):
         success = True
     except subprocess.CalledProcessError as err:
         if pref.debug_info:
+            print("\n==========================================================================================")
             print("google_maps_rd failed and returned:")
             print(err.output.decode())
+            #TODO: investigate RenderDoc return codes
+            #print("subprocess.CalledProcessError.returncode: ",err.returncode) #seems to return 1 on any error -> meaningless, 
         success = False
+    #TODO: ask @eliemichel if there's a special reason to use the success-variable-detour
     if not success:
         raise MapsModelsImportError(MSG_INCORRECT_RDC)
 
