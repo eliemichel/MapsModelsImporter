@@ -62,6 +62,10 @@ Troubleshooting
 
 Useful information can be found in the comment of the video, as well as on [the support thread on blenderartists](https://blenderartists.org/t/google-maps-models-importer/1153561).
 
+### Example of capture files
+
+To check your installation, you can try importing sample captures from [MapsModelsImporter-samples](https://github.com/eliemichel/MapsModelsImporter-samples).
+
 ### Linux
 
 Unfortunately, the *inject into process* functionality of RenderDoc is not supported on linux. You can still import existing captures on linux, though.
