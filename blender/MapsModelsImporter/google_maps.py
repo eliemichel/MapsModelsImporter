@@ -34,6 +34,15 @@ MSG_INCORRECT_RDC = """Invalid RDC capture file. Please make sure that:
 2. You were MOVING in the 3D view while taking the capture (you can use the Capture after delay button in RenderDoc).
 Please report to MapsModelsImporter developers providing the .rdc file as well as the full console log.
 Console log is accessible in Windows > Toggle System Console (right click to copy)."""
+MSG_RDMODULE_NOT_FOUND = """Error: Can't find the RenderDoc Module.
+Please report to MapsModelsImporter developers providing the full console log.
+Console log is accessible in Windows > Toggle System Console (right click to copy)."""
+MSG_RDMODULE_IMPORT_ERROR = """Error: Failed to load the RenderDoc Module.
+Please report to MapsModelsImporter developers providing the full console log.
+Console log is accessible in Windows > Toggle System Console (right click to copy)."""
+MSG_UNKNOWN_ERROR = """Error: An unknown Error occurred!
+Please report to MapsModelsImporter developers providing the full console log.
+Console log is accessible in Windows > Toggle System Console (right click to copy)."""
 
 class MapsModelsImportError(Exception):
     pass
@@ -54,18 +63,20 @@ def captureToFiles(context, filepath, prefix, max_blocks):
         if pref.debug_info:
             print("google_maps_rd returned:")
             print(out.decode())
-        success = True
     except subprocess.CalledProcessError as err:
         if pref.debug_info:
             print("\n==========================================================================================")
             print("google_maps_rd failed and returned:")
             print(err.output.decode())
-            #TODO: investigate RenderDoc return codes
-            #print("subprocess.CalledProcessError.returncode: ",err.returncode) #seems to return 1 on any error -> meaningless, 
-        success = False
-    #TODO: ask @eliemichel if there's a special reason to use the success-variable-detour
-    if not success:
-        raise MapsModelsImportError(MSG_INCORRECT_RDC)
+        if err.returncode == 20: #error codes 20 and 21 are defined in google_maps_rd.py
+            ERROR_MESSAGE = MSG_RDMODULE_NOT_FOUND
+        elif err.returncode == 21:
+            ERROR_MESSAGE = MSG_RDMODULE_IMPORT_ERROR
+        elif err.returncode == 1:
+            ERROR_MESSAGE = MSG_INCORRECT_RDC
+        else:
+            ERROR_MESSAGE = MSG_UNKNOWN_ERROR + "\nReturncode: " + err.returncode
+        raise MapsModelsImportError(ERROR_MESSAGE)
 
 # -----------------------------------------------------------------------------
 
