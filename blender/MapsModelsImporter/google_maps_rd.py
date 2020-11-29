@@ -281,7 +281,6 @@ def main(controller):
     scraper.run()
 
 if __name__ == "__main__":
-    #loadRenderDocModule()
     if 'pyrenderdoc' in globals():
         pyrenderdoc.Replay().BlockInvoke(main)
     else:
