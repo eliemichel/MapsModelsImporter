@@ -43,7 +43,8 @@ except ModuleNotFoundError as err:
     sys.exit(20)
 except ImportError as err:
     print(MSG_RD_IMPORT_FAILED)
-    print("Python version used by your Blender installation: ",sys.version)
+    print("sys.platform: ", sys.platform)
+    print("Python version: ",sys.version)
     print("err.name: ",err.name)
     print("err.path: ",err.path)
     print("Error Message: ", err,"\n")
