@@ -61,13 +61,17 @@ def captureToFiles(context, filepath, prefix, max_blocks):
     """Extract binary files and textures from a RenderDoc capture file.
     This spawns a standalone Python interpreter because renderdoc module cannot be loaded in embedded Python"""
     pref = getPreferences(context)
-    blender_dir = os.path.dirname(sys.executable)
-    blender_version = ("{0}.{1}").format(*bpy.app.version)
-    python_home = os.path.join(blender_dir, blender_version, "python")
+    if bpy.app.version < (2,91,0):
+        blender_dir = os.path.dirname(sys.executable)
+        blender_version = ("{0}.{1}").format(*bpy.app.version)
+        python_home = os.path.join(blender_dir, blender_version, "python")
+        python = os.path.join(python_home, "bin", "python.exe" if sys.platform == "win32" else "python3.7m") # warning: hardcoded python version for non-windows might fail with Blender update
+    else:
+        python = sys.executable
+        python_home = os.path.dirname(os.path.dirname(sys.executable))
     os.environ["PYTHONHOME"] = python_home
     os.environ["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
     os.environ["PYTHONPATH"] += os.pathsep + os.path.abspath(getBinaryDir())
-    python = os.path.join(python_home, "bin", "python.exe" if sys.platform == "win32" else "python3.7m") # warning: hardcoded python version for non-windows might fail with Blender update
     try:
         out = subprocess.check_output([python, SCRIPT_PATH, filepath, prefix, str(max_blocks)], stderr=subprocess.STDOUT)
         if pref.debug_info:
@@ -78,6 +82,7 @@ def captureToFiles(context, filepath, prefix, max_blocks):
             print("\n==========================================================================================")
             print("google_maps_rd failed and returned:")
             print(err.output.decode())
+            print(f"\nExtra info:\n - python = {python}\n - python_home = {python_home}")
         if err.returncode == 20: #error codes 20 and 21 are defined in google_maps_rd.py
             ERROR_MESSAGE = MSG_RDMODULE_NOT_FOUND
         elif err.returncode == 21:
