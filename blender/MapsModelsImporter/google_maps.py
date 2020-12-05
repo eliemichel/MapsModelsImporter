@@ -29,11 +29,30 @@ from .utils import getBinaryDir, makeTmpDir
 from .preferences import getPreferences
 
 SCRIPT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "google_maps_rd.py")
+
+MSG_CONSOLE_DEBUG_OUTPUT = """\nPlease report to MapsModelsImporter developers providing the full console log with debug information.
+First turn on debug output by activating the "Debug Info"-checkbox under Edit > Preferences > Add-ons > MapsModelsImporter
+On Windows systems console log is accessible in Windows > Toggle System Console (right click to copy).
+On Linux systems you have to run Blender from the console to get the debug output"""
 MSG_INCORRECT_RDC = """Invalid RDC capture file. Please make sure that:
-1. You are importing from Google Maps or Google Earth web
-2. You were MOVING in the 3D view while taking the capture (you can use the Capture after delay button in RenderDoc).
-Please report to MapsModelsImporter developers providing the .rdc file as well as the full console log.
-Console log is accessible in Windows > Toggle System Console (right click to copy)."""
+1. You are using the recommended RenderDoc Version for this AddOn
+   - RenderDoc Version 1.5 - 1.9 for MapsModelsImporter <= 0.3.2
+   - RenderDoc Version >= 1.10 for MapsModelsImporter >= 0.3.3
+2. You are importing from Google Maps or Google Earth web
+3. You were MOVING in the 3D view while taking the capture (you can use the "Capture after delay"-button in RenderDoc).
+
+Before opening a new Issue on GitHub please download a working sample file to check if this works on your Computer.
+Please be patient. If there's no error message it might still be loading. 
+It can take a minute or two to load it and Blender will get unresponsive during this time.
+Find sample files here: https://github.com/eliemichel/MapsModelsImporter-samples
+
+If it works with a sample file you most probably shouldn't open a new issue on GitHub but figure out how to use RenderDoc.
+Find instructions about using RenderDoc by searching YouTube for "Capturing Google Maps with RenderDoc"
+
+If the sample file doesn't work:""" + MSG_CONSOLE_DEBUG_OUTPUT
+MSG_RDMODULE_NOT_FOUND = "Error: Can't find the RenderDoc Module." + MSG_CONSOLE_DEBUG_OUTPUT
+MSG_RDMODULE_IMPORT_ERROR = "Error: Failed to load the RenderDoc Module." + MSG_CONSOLE_DEBUG_OUTPUT
+MSG_UNKNOWN_ERROR = "Error: An unknown Error occurred!" + MSG_CONSOLE_DEBUG_OUTPUT
 
 class MapsModelsImportError(Exception):
     pass
@@ -54,14 +73,22 @@ def captureToFiles(context, filepath, prefix, max_blocks):
         if pref.debug_info:
             print("google_maps_rd returned:")
             print(out.decode())
-        success = True
     except subprocess.CalledProcessError as err:
         if pref.debug_info:
+            print("\n==========================================================================================")
             print("google_maps_rd failed and returned:")
             print(err.output.decode())
-        success = False
-    if not success:
-        raise MapsModelsImportError(MSG_INCORRECT_RDC)
+        if err.returncode == 20: #error codes 20 and 21 are defined in google_maps_rd.py
+            ERROR_MESSAGE = MSG_RDMODULE_NOT_FOUND
+        elif err.returncode == 21:
+            ERROR_MESSAGE = MSG_RDMODULE_IMPORT_ERROR
+        elif err.returncode == 1:
+            ERROR_MESSAGE = MSG_INCORRECT_RDC
+            if pref.debug_info:
+                print(MSG_INCORRECT_RDC)
+        else:
+            ERROR_MESSAGE = MSG_UNKNOWN_ERROR + "\nReturncode: " + err.returncode
+        raise MapsModelsImportError(ERROR_MESSAGE)
 
 # -----------------------------------------------------------------------------
 
