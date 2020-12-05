@@ -72,6 +72,7 @@ def captureToFiles(context, filepath, prefix, max_blocks):
     os.environ["PYTHONHOME"] = python_home
     os.environ["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
     os.environ["PYTHONPATH"] += os.pathsep + os.path.abspath(getBinaryDir())
+    os.environ["PATH"] += os.pathsep + os.path.join(python_home, "bin")
     try:
         out = subprocess.check_output([python, SCRIPT_PATH, filepath, prefix, str(max_blocks)], stderr=subprocess.STDOUT)
         if pref.debug_info:
