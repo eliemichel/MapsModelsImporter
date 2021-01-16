@@ -131,7 +131,7 @@ You can check out the [LilyTexturePacker](https://gumroad.com/l/DFExj) add-on I'
 
 ### It's taking too long, how to automate this process?
 
-Although I don't know how to automate the capture itself, you can easily automate the importing part, see [this issue](https://github.com/eliemichel/MapsModelsImporter/issues/39) for an example of automation script.
+Although I don't know how to automate the capture itself, you can easily automate the importing part, see [this issue](https://github.com/eliemichel/MapsModelsImporter/issues/39) for an example of automation script, or [this one](https://github.com/eliemichel/MapsModelsImporter/issues/128) to import all rdc files from a directory.
 
 Notable use cases
 -----------------
