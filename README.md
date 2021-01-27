@@ -62,6 +62,10 @@ Troubleshooting
 
 Useful information can be found in the comment of the video, as well as on [the support thread on blenderartists](https://blenderartists.org/t/google-maps-models-importer/1153561).
 
+### Check software versions
+
+Most importantly, use the last version of this add-on. In the release notes of each version the recommended/required versions of RenderDoc and Blender are specified. As of now, use RenderDoc v1.10 (**not** 1.11) and the last version of Blender.
+
 ### Example of capture files
 
 To check your installation, you can try importing sample captures from [MapsModelsImporter-samples](https://github.com/eliemichel/MapsModelsImporter-samples).
