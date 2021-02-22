@@ -258,7 +258,7 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
         # Make triangles from triangle strip index buffer
         n = len(indices)
         if constants["DrawCall"]["topology"] == 'TRIANGLE_STRIP':
-            tris = [ [ indices[i+j] for j in [[0,1,2],[0,2,1]][i%2] ] for i in range(n - 3)]
+            tris = [ [ indices[i+j] for j in [[0,1,2],[0,2,1]][i%2] ] for i in range(n - 2)]
             tris = [ t for t in tris if t[0] != t[1] and t[0] != t[2] and t[1] != t[2] ]
         else:
             tris = [ [ indices[3*i+j] for j in range(3) ] for i in range(n//3) ]
