@@ -133,6 +133,14 @@ You can use the [LilyCaptureMerger](https://gumroad.com/l/KSvXuu) add-on for thi
 
 You can check out the [LilyTexturePacker](https://gumroad.com/l/DFExj) add-on I've made especially for this. Beware to use it only **after** using LilyTextureMerger, because the latter rely on individual block textures to perform matching.
 
+### How to clean up imported geometry
+
+Even though it won't make miracles, the following can help:
+
+ - To join all chunks into a single mesh: A (to select all), Ctrl+J
+ - To weld vertices: Switch to Edit mode (Tab), M > By Distance.
+ - To set the scale to 1 without changing the size of the geometry: Ctrl+A > Scale
+
 ### It's taking too long, how to automate this process?
 
 Although I don't know how to automate the capture itself, you can easily automate the importing part, see [this issue](https://github.com/eliemichel/MapsModelsImporter/issues/39) for an example of automation script, or [this one](https://github.com/eliemichel/MapsModelsImporter/issues/128) to import all rdc files from a directory.
