@@ -12,5 +12,5 @@ If you are having trouble importing a .rdc file with this add-on, please provide
  - The .rdc file
  - Your GPU name
  - Version of this add-on (must be the most recent one)
- - Version of RenderDoc (1.10 recommended)
+ - Version of RenderDoc (1.10 mandatory)
  - Version of Blender (2.82 minimum)
