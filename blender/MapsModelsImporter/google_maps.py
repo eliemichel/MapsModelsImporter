@@ -37,8 +37,7 @@ On Linux systems you have to run Blender from the console to get the debug outpu
 MSG_INCORRECT_RDC = """Invalid RDC capture file. Please make sure that:
 1. You are using the recommended RenderDoc Version for this AddOn
    - RenderDoc Version 1.5 - 1.9 for MapsModelsImporter <= 0.3.2
-   - RenderDoc Version 1.10 for MapsModelsImporter >= 0.3.3
-   - RenderDoc Version 1.11 & 1.12 don't work at the moment (latest MapsModelsImporter is 0.3.5). But it probably will work in a future Version.
+   - RenderDoc Version >= 1.10 for MapsModelsImporter >= 0.3.3
 2. You are importing from Google Maps or Google Earth web
 3. You were MOVING in the 3D view while taking the capture (you can use the "Capture after delay"-button in RenderDoc).
 
@@ -259,7 +258,7 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
         # Make triangles from triangle strip index buffer
         n = len(indices)
         if constants["DrawCall"]["topology"] == 'TRIANGLE_STRIP':
-            tris = [ [ indices[i+j] for j in [[0,1,2],[0,2,1]][i%2] ] for i in range(n - 2)]
+            tris = [ [ indices[i+j] for j in [[0,1,2],[0,2,1]][i%2] ] for i in range(n - 3)]
             tris = [ t for t in tris if t[0] != t[1] and t[0] != t[2] and t[1] != t[2] ]
         else:
             tris = [ [ indices[3*i+j] for j in range(3) ] for i in range(n//3) ]
