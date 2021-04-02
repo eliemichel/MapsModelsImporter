@@ -163,7 +163,7 @@ class CaptureScraper():
             min_drawcall = 0
             while True:
                 skipped_drawcalls, new_min_drawcall = self.findDrawcallBatch(drawcalls[min_drawcall:], first_call, drawcall_prefix, last_call)
-                if self.hasUniform(skipped_drawcalls[0], "_uMeshToWorldMatrix"):
+                if not skipped_drawcalls or self.hasUniform(skipped_drawcalls[0], "_uMeshToWorldMatrix"):
                     break
                 min_drawcall += new_min_drawcall
         elif _strategy == 6:
