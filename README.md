@@ -64,7 +64,7 @@ Useful information can be found in the comment of the video, as well as on [the 
 
 ### Check software versions
 
-Most importantly, use the last version of this add-on. In the release notes of each version the recommended/required versions of RenderDoc and Blender are specified. As of now, use RenderDoc v1.10 (**not** 1.11) and the last version of Blender.
+Most importantly, use the last version of this add-on. In the release notes of each version the recommended/required versions of RenderDoc and Blender are specified. As of now, use RenderDoc v1.13 (**not** something else) and the last version of Blender.
 
 ### Example of capture files
 
@@ -175,7 +175,7 @@ For more details, see individual [releases](https://github.com/eliemichel/MapsMo
 Help Wanted
 -----------
 
-This repository does not provide the required RenderDoc binaries for linux nor for OSX. If you have such a system, build RenderDoc against Python 3.7.4 (the minor version matters) to be compatible with the version of Blender's Python distribution.
+This repository does not provide the required RenderDoc binaries for linux nor for OSX. If you have such a system, build RenderDoc against Python 3.9 (the minor version matters) to be compatible with the version of Blender's Python distribution. See [doc/Building RenderDoc module.md](doc/Building%20RenderDoc%20module.md).
 
 Other links
 -----------
