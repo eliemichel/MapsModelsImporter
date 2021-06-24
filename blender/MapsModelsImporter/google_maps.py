@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019 - 2021 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -37,7 +37,8 @@ On Linux systems you have to run Blender from the console to get the debug outpu
 MSG_INCORRECT_RDC = """Invalid RDC capture file. Please make sure that:
 1. You are using the recommended RenderDoc Version for this AddOn
    - RenderDoc Version 1.5 - 1.9 for MapsModelsImporter <= 0.3.2
-   - RenderDoc Version >= 1.10 for MapsModelsImporter >= 0.3.3
+   - RenderDoc Version = 1.10 for MapsModelsImporter >= 0.3.3 and <= 0.3.7
+   - RenderDoc Version = 1.13 for MapsModelsImporter >= 0.4.0
 2. You are importing from Google Maps or Google Earth web
 3. You were MOVING in the 3D view while taking the capture (you can use the "Capture after delay"-button in RenderDoc).
 

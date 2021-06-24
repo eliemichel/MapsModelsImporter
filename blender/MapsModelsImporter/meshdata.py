@@ -79,7 +79,7 @@ class MeshData(rd.MeshFormat):
 
         mesh.indexResourceId = ib.resourceId
         mesh.indexByteOffset = ib.byteOffset
-        mesh.indexByteStride = draw.indexByteWidth
+        mesh.indexByteStride = ib.byteStride
         mesh.baseVertex = draw.baseVertex
         mesh.indexOffset = draw.indexOffset
         mesh.numIndices = draw.numIndices

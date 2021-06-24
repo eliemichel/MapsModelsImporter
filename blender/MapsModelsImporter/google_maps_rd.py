@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019 - 2021 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -109,18 +109,18 @@ class CaptureScraper():
                     for member in var.members:
                         memval = 0
                         if member.type == rd.VarType.Float:
-                            memval = member.value.fv[:member.rows * member.columns]
+                            memval = member.value.f32v[:member.rows * member.columns]
                         elif member.type == rd.VarType.Int:
-                            memval = member.value.iv[:member.rows * member.columns]
+                            memval = member.value.s32v[:member.rows * member.columns]
                         else:
                             print("Unsupported type!")
                         # ...
                         val.append(memval)
                 else:
                     if var.type == rd.VarType.Float:
-                        val = var.value.fv[:var.rows * var.columns]
+                        val = var.value.f32v[:var.rows * var.columns]
                     elif var.type == rd.VarType.Int:
-                        val = var.value.iv[:var.rows * var.columns]
+                        val = var.value.s32v[:var.rows * var.columns]
                     else:
                         print("Unsupported type!")
                     # ...
@@ -251,7 +251,7 @@ class CaptureScraper():
             ref = state.GetShaderReflection(rd.ShaderStage.Vertex)
             constants = self.getVertexShaderConstants(draw, state=state)
             constants["DrawCall"] = {
-                "topology": 'TRIANGLE_STRIP' if draw.topology == rd.Topology.TriangleStrip else 'TRIANGLES',
+                "topology": 'TRIANGLE_STRIP' if state.GetPrimitiveTopology() == rd.Topology.TriangleStrip else 'TRIANGLES',
                 "type": capture_type
             }
             with open("{}{:05d}-constants.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
