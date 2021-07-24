@@ -132,7 +132,7 @@ class CaptureScraper():
         constants = self.getVertexShaderConstants(draw)
         return uniform in constants['$Globals']
 
-    def extractRelevantCalls(self, drawcalls, _strategy=4):
+    def extractRelevantCalls(self, drawcalls, _strategy=0):
         """List the drawcalls related to drawing the 3D meshes thank to a ad hoc heuristic
         It may different in RenderDoc UI and in Python module, for some reason
         """
@@ -160,12 +160,9 @@ class CaptureScraper():
             last_call = ""
             drawcall_prefix = "DrawIndexed"
             capture_type = "Google Earth"
-            min_drawcall = 0
-            while True:
-                skipped_drawcalls, new_min_drawcall = self.findDrawcallBatch(drawcalls[min_drawcall:], first_call, drawcall_prefix, last_call)
-                if not skipped_drawcalls or self.hasUniform(skipped_drawcalls[0], "_uMeshToWorldMatrix"):
-                    break
-                min_drawcall += new_min_drawcall
+            skipped_drawcalls, min_drawcall = self.findDrawcallBatch(drawcalls, first_call, drawcall_prefix, last_call)
+            if not skipped_drawcalls or not self.hasUniform(skipped_drawcalls[0], "_uProjModelviewMatrix"):
+                first_call = "INVALID CASE, SKIP ME"
         elif _strategy == 6:
             # Actually sometimes there's only one batch
             first_call = "DrawIndexed"
@@ -184,7 +181,7 @@ class CaptureScraper():
             print("Error: Could not find the beginning of the relevant 3D draw calls")
             return [], "none"
 
-        print(f"Trying scraping strategy #{_strategy}...")
+        print(f"Trying scrapping strategy #{_strategy}...")
         relevant_drawcalls, _ = self.findDrawcallBatch(
             drawcalls[min_drawcall:],
             first_call,
@@ -203,19 +200,13 @@ class CaptureScraper():
             else:
                 capture_type = "Google Earth"
 
-        if capture_type == "Google Earth":
-            relevant_drawcalls = [
-                call for call in relevant_drawcalls
-                if self.hasUniform(call, "_uMeshToWorldMatrix")
-            ]
-
         return relevant_drawcalls, capture_type
 
     def run(self):
         controller = self.controller
         drawcalls = controller.GetDrawcalls()
         relevant_drawcalls, capture_type = self.extractRelevantCalls(drawcalls)
-        print(f"Scraping capture from {capture_type}...")
+        print(f"Scrapping capture from {capture_type}...")
 
         if MAX_BLOCKS <= 0:
             max_drawcall = len(relevant_drawcalls)

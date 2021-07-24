@@ -38,7 +38,7 @@ MSG_INCORRECT_RDC = """Invalid RDC capture file. Please make sure that:
 1. You are using the recommended RenderDoc Version for this AddOn
    - RenderDoc Version 1.5 - 1.9 for MapsModelsImporter <= 0.3.2
    - RenderDoc Version = 1.10 for MapsModelsImporter >= 0.3.3 and <= 0.3.7
-   - RenderDoc Version = 1.13 for MapsModelsImporter >= 0.4.0
+   - RenderDoc Version = 1.14 for MapsModelsImporter >= 0.4.0
 2. You are importing from Google Maps or Google Earth web
 3. You were MOVING in the 3D view while taking the capture (you can use the "Capture after delay"-button in RenderDoc).
 
@@ -73,17 +73,18 @@ def captureToFiles(context, filepath, prefix, max_blocks):
     os.environ["PYTHONHOME"] = python_home
     os.environ["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
     os.environ["PYTHONPATH"] += os.pathsep + os.path.abspath(getBinaryDir())
+    os.environ["PYTHONIOENCODING"] = "utf-8"
     os.environ["PATH"] += os.pathsep + os.path.join(python_home, "bin")
     try:
-        out = subprocess.check_output([python, SCRIPT_PATH, filepath, prefix, str(max_blocks)], stderr=subprocess.STDOUT)
+        out = subprocess.check_output([python, SCRIPT_PATH, filepath.encode("utf-8"), prefix, str(max_blocks)], stderr=subprocess.STDOUT, text=True)
         if pref.debug_info:
             print("google_maps_rd returned:")
-            print(out.decode())
+            print(out)
     except subprocess.CalledProcessError as err:
         if pref.debug_info:
             print("\n==========================================================================================")
             print("google_maps_rd failed and returned:")
-            print(err.output.decode())
+            print(err.output)
             print(f"\nExtra info:\n - python = {python}\n - python_home = {python_home}")
         if err.returncode == 20: #error codes 20 and 21 are defined in google_maps_rd.py
             ERROR_MESSAGE = MSG_RDMODULE_NOT_FOUND
