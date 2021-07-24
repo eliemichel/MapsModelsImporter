@@ -38,7 +38,7 @@ MSG_INCORRECT_RDC = """Invalid RDC capture file. Please make sure that:
 1. You are using the recommended RenderDoc Version for this AddOn
    - RenderDoc Version 1.5 - 1.9 for MapsModelsImporter <= 0.3.2
    - RenderDoc Version = 1.10 for MapsModelsImporter >= 0.3.3 and <= 0.3.7
-   - RenderDoc Version = 1.14 for MapsModelsImporter >= 0.4.0
+   - RenderDoc Version = 1.13 for MapsModelsImporter >= 0.4.0
 2. You are importing from Google Maps or Google Earth web
 3. You were MOVING in the 3D view while taking the capture (you can use the "Capture after delay"-button in RenderDoc).
 
@@ -76,7 +76,7 @@ def captureToFiles(context, filepath, prefix, max_blocks):
     os.environ["PYTHONIOENCODING"] = "utf-8"
     os.environ["PATH"] += os.pathsep + os.path.join(python_home, "bin")
     try:
-        out = subprocess.check_output([python, SCRIPT_PATH, filepath.encode("utf-8"), prefix, str(max_blocks)], stderr=subprocess.STDOUT, text=True)
+        out = subprocess.check_output([python, SCRIPT_PATH, filepath, prefix, str(max_blocks)], stderr=subprocess.STDOUT, text=True)
         if pref.debug_info:
             print("google_maps_rd returned:")
             print(out)
