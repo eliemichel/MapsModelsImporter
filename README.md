@@ -145,6 +145,10 @@ Even though it won't make miracles, the following can help:
 
 Although I don't know how to automate the capture itself, you can easily automate the importing part, see [this issue](https://github.com/eliemichel/MapsModelsImporter/issues/39) for an example of automation script, or [this one](https://github.com/eliemichel/MapsModelsImporter/issues/128) to import all rdc files from a directory.
 
+### Importing fails with some "UnicodeEncodeError"
+
+Remove any special character from your filename and from the directories that contain it.
+
 Notable use cases
 -----------------
 
