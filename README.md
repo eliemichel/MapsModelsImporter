@@ -131,7 +131,7 @@ You can use the [LilyCaptureMerger](https://gumroad.com/l/KSvXuu) add-on for thi
 
 ### There are so many textures, it's impractical for export!
 
-You can check out the [LilyTexturePacker](https://gumroad.com/l/DFExj) add-on I've made especially for this. Beware to use it only **after** using LilyTextureMerger, because the latter rely on individual block textures to perform matching.
+You can check out the [LilyTexturePacker](https://gumroad.com/l/DFExj) add-on I've made especially for this. Beware to use it only **after** using LilyCaptureMerger, because the latter rely on individual block textures to perform matching.
 
 ### How to clean up imported geometry
 
