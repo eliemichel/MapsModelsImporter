@@ -33,6 +33,7 @@ Find more information about building the RenderDoc Module here: https://github.c
 import sys
 import pickle
 import struct
+import numpy as np
 
 try:
     import renderdoc as rd
@@ -51,10 +52,18 @@ except ImportError as err:
     sys.exit(21)
 
 from meshdata import MeshData, makeMeshData
+from profiling import Timer, profiling_counters
 from rdutils import CaptureWrapper
 
 _, CAPTURE_FILE, FILEPREFIX, MAX_BLOCKS_STR = sys.argv[:4]
 MAX_BLOCKS = int(MAX_BLOCKS_STR)
+
+def numpySave(array, file):
+    np.array([array.ndim], dtype=np.int).tofile(file)
+    np.array(array.shape, dtype=np.int).tofile(file)
+    dt = array.dtype.descr[0][1][1:3].encode('ascii')
+    file.write(dt)
+    array.tofile(file)
 
 class CaptureScraper():
     def __init__(self, controller):
@@ -96,6 +105,7 @@ class CaptureScraper():
             variables = controller.GetCBufferVariableContents(
                 state.GetGraphicsPipelineObject(),
                 shader,
+                rd.ShaderStage.Vertex,
                 ep,
                 cb.bindPoint,
                 cbuff.resourceId,
@@ -174,11 +184,11 @@ class CaptureScraper():
             capture_type = "Google Earth (single)"
         elif _strategy == 7:
             first_call = "ClearRenderTargetView(0.000000, 0.000000, 0.000000"
-            last_call = "Draw(4)"
+            last_call = "Draw()"
             drawcall_prefix = "DrawIndexed"
         elif _strategy == 8:
             first_call = "" # Try from the beginning on
-            last_call = "Draw(4)"
+            last_call = "Draw()"
             drawcall_prefix = "DrawIndexed"
         else:
             print("Error: Could not find the beginning of the relevant 3D draw calls")
@@ -211,10 +221,27 @@ class CaptureScraper():
 
         return relevant_drawcalls, capture_type
 
+
+    def consolidateEvents(self, rootList, accumulator = []):
+        for root in rootList:
+            name = root.GetName(self.controller.GetStructuredFile())
+            event = root
+            setattr(root, 'name', name.split('::', 1)[-1])
+            accumulator.append(event)
+            self.consolidateEvents(root.children, accumulator)
+        return accumulator
+
     def run(self):
         controller = self.controller
-        drawcalls = controller.GetDrawcalls()
+
+        timer = Timer()
+        drawcalls = self.consolidateEvents(controller.GetRootActions())
+        profiling_counters['consolidateEvents'].add_sample(timer)
+        
+        timer = Timer()
         relevant_drawcalls, capture_type = self.extractRelevantCalls(drawcalls)
+        profiling_counters['extractRelevantCalls'].add_sample(timer)
+
         print(f"Scraping capture from {capture_type}...")
 
         if MAX_BLOCKS <= 0:
@@ -223,7 +250,8 @@ class CaptureScraper():
             max_drawcall = min(MAX_BLOCKS, len(relevant_drawcalls))
 
         for drawcallId, draw in enumerate(relevant_drawcalls[:max_drawcall]):
-            print("Draw call: " + draw.name)
+            timer = Timer()
+            #print("Draw call: " + draw.name)
             
             controller.SetFrameEvent(draw.eventId, True)
             state = controller.GetPipelineState()
@@ -236,20 +264,24 @@ class CaptureScraper():
             try:
                 # Position
                 m = meshes[0]
-                m.fetchTriangle(controller)
+                #m.fetchTriangle(controller)
                 indices = m.fetchIndices(controller)
                 with open("{}{:05d}-indices.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
-                    pickle.dump(indices, file)
+                    numpySave(indices, file)
+
+                subtimer = Timer()
                 unpacked = m.fetchData(controller)
                 with open("{}{:05d}-positions.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
-                    pickle.dump(unpacked, file)
+                    numpySave(unpacked, file)
 
                 # UV
+                if len(meshes) < 2:
+                    raise Exception("No UV data")
                 m = meshes[2 if capture_type == "Google Earth" else 1]
-                m.fetchTriangle(controller)
+                #m.fetchTriangle(controller)
                 unpacked = m.fetchData(controller)
                 with open("{}{:05d}-uv.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
-                    pickle.dump(unpacked, file)
+                    numpySave(unpacked, file)
             except Exception as err:
                 print("(Skipping because of error: {})".format(err))
                 continue
@@ -266,7 +298,15 @@ class CaptureScraper():
             with open("{}{:05d}-constants.bin".format(FILEPREFIX, drawcallId), 'wb') as file:
                 pickle.dump(constants, file)
 
+            subtimer = Timer()
             self.extractTexture(drawcallId, state)
+            profiling_counters['extractTexture'].add_sample(subtimer)
+
+            profiling_counters['processDrawEvent'].add_sample(timer)
+
+        print("Profiling counters:")
+        for key, counter in profiling_counters.items():
+            print(f" - {key}: {counter.summary()}")
 
     def extractTexture(self, drawcallId, state):
         """Save the texture in a png file (A bit dirty)"""
@@ -284,7 +324,9 @@ class CaptureScraper():
         texsave.slice.sliceIndex = 0
         texsave.alpha = rd.AlphaMapping.Preserve
         texsave.destType = rd.FileType.PNG
+        timer = Timer()
         controller.SaveTexture(texsave, "{}{:05d}-texture.png".format(FILEPREFIX, drawcallId))
+        profiling_counters["SaveTexture"].add_sample(timer)
 
 def main(controller):
     scraper = CaptureScraper(controller)

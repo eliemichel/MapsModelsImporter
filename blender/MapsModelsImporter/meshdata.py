@@ -25,6 +25,8 @@
 
 import struct
 import renderdoc as rd
+from profiling import Timer, profiling_counters
+import numpy as np
 
 # -----------------------------------------------------------------------------
 
@@ -66,6 +68,57 @@ def unpackData(fmt, data):
 
     return value
 
+def unpackDataNumpy(fmt, data, stride=None, count=-1):
+    compType = {
+        rd.CompType.UInt:    'u',
+        rd.CompType.SInt:    'i',
+        rd.CompType.Float:   'f',
+        rd.CompType.UNorm:   'u',
+        rd.CompType.UScaled: 'u',
+        rd.CompType.SNorm:   'i',
+        rd.CompType.SScaled: 'i',
+        #rd.CompType.Double:  'f',
+    }[fmt.compType]
+    data_field = ('data', f"{fmt.compCount}{compType}{fmt.compByteWidth}")
+
+    dtype = np.dtype([data_field])
+    if stride is not None:
+        missing = stride - dtype.itemsize
+        if missing > 0:
+            dtype = np.dtype([data_field, ('align', f"{missing}u1")])
+            #data = np.array(data).reshape((-1, stride))
+            #data = data[:,:dtype.itemsize].reshape(-1)
+            data = data + b'\x00' * missing
+
+    try:
+        decoded = np.frombuffer(data, dtype, count=count)['data']
+    except ValueError as err:
+        print(err)
+        print(data)
+        print(f"len(data) = {len(data)}")
+        print(f"dtype = {dtype}")
+        print(f"dtype.itemsize = {dtype.itemsize}")
+        print(f"stride = {stride}")
+        print(f"count = {count}")
+    #decoded = decoded.reshape((-1, fmt.compCount))
+
+    # Post process
+    if fmt.compType == rd.CompType.UNorm:
+        divisor = float((1 << (fmt.compByteWidth * 8)) - 1)
+        decoded = decoded.astype('f') / divisor
+    elif fmt.compType == rd.CompType.SNorm:
+        maxNeg = -(1 << (fmt.compByteWidth * 8 - 1))
+        divisor = float(-(maxNeg-1))
+
+        mask = decoded != maxNeg
+        decoded = decoded.astype('f')
+        decoded[mask] /= divisor
+    if fmt.BGRAOrder():
+        # If the format is BGRA, swap the two components
+        decoded = decoded[:,[2, 1, 0, 3]]
+
+    return decoded
+
 # -----------------------------------------------------------------------------
 
 class MeshData(rd.MeshFormat):
@@ -85,7 +138,7 @@ class MeshData(rd.MeshFormat):
         mesh.numIndices = draw.numIndices
 
         # If the draw doesn't use an index buffer, don't use it even if bound
-        if not (draw.flags & rd.DrawFlags.Indexed):
+        if not (draw.flags & rd.ActionFlags.Indexed):
             mesh.indexResourceId = rd.ResourceId.Null()
 
         # The total offset is the attribute offset from the base of the vertex
@@ -96,29 +149,29 @@ class MeshData(rd.MeshFormat):
         mesh.name = attr.name
 
     def fetchIndices(mesh, controller):
-        # TODO: convert to numpy
         # If indexed draw call
         if mesh.indexResourceId != rd.ResourceId.Null():
             # struct-style format string
-            indexFormat = str(mesh.numIndices) + {2: 'H', 4: 'I'}.get(mesh.indexByteStride, 'B')
             ibdata = controller.GetBufferData(mesh.indexResourceId, mesh.indexByteOffset, 0)
             offset = mesh.indexOffset * mesh.indexByteStride
-            indices = struct.unpack_from(indexFormat, ibdata, offset)
-            return [i + mesh.baseVertex for i in indices]
+
+            dtype = np.dtype(f"u{mesh.indexByteStride}")
+            indices = np.frombuffer(ibdata, dtype=dtype, count=mesh.numIndices, offset=offset) + mesh.baseVertex
         else:
-            return tuple(range(mesh.baseVertex, mesh.baseVertex + mesh.numIndices))
+            indices = np.range(mesh.baseVertex, mesh.baseVertex + mesh.numIndices)
+
+        return indices
 
     def fetchData(mesh, controller):
-        # TODO: convert to numpy
         indices = mesh.fetchIndices(controller)
+
         if len(indices) == 0:
             return []
         data = controller.GetBufferData(mesh.vertexResourceId, mesh.vertexByteOffset, 0)
+
         maxi = max(indices) + 1
-        s = mesh.vertexByteStride
-        unpacked = [0] * maxi
-        for i in range(maxi):
-            unpacked[i] = unpackData(mesh.format, data[s*i:s*(i+1)])
+        unpacked = unpackDataNumpy(mesh.format, data, stride=mesh.vertexByteStride, count=maxi)
+
         return unpacked
 
     def fetchTriangle(mesh, controller):

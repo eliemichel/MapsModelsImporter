@@ -24,7 +24,9 @@
 import sys
 import os
 import subprocess
+import numpy as np
 
+from .profiling import Timer, profiling_counters
 from .utils import getBinaryDir, makeTmpDir
 from .preferences import getPreferences
 
@@ -35,10 +37,11 @@ First turn on debug output by activating the "Debug Info"-checkbox under Edit > 
 On Windows systems console log is accessible in Windows > Toggle System Console (right click to copy).
 On Linux systems you have to run Blender from the console to get the debug output"""
 MSG_INCORRECT_RDC = """Invalid RDC capture file. Please make sure that:
-1. You are using the recommended RenderDoc Version for this AddOn
+1. You are using the recommended RenderDoc Version for this Add-on
    - RenderDoc Version 1.5 - 1.9 for MapsModelsImporter <= 0.3.2
    - RenderDoc Version = 1.10 for MapsModelsImporter >= 0.3.3 and <= 0.3.7
-   - RenderDoc Version = 1.13 for MapsModelsImporter >= 0.4.0
+   - RenderDoc Version 1.13 - 1.14 for MapsModelsImporter >= 0.4.0  and <= 0.4.2
+   - RenderDoc Version = 1.19 for MapsModelsImporter >= 0.5.0
 2. You are importing from Google Maps or Google Earth web
 3. You were MOVING in the 3D view while taking the capture (you can use the "Capture after delay"-button in RenderDoc).
 
@@ -207,15 +210,26 @@ def addImageMaterial(name, obj, img):
         links = mat.node_tree.links
         link = links.new(texture_node.outputs[0], principled.inputs[0])
 
+def numpyLoad(file):
+    (dim,) = np.fromfile(file, dtype=np.int, count=1)
+    shape = np.fromfile(file, dtype=np.int, count=dim)
+    dt = np.dtype(file.read(2).decode('ascii'))
+    array = np.fromfile(file, dtype=dt)
+    array = array.reshape(shape)
+    return array
+
 def loadData(prefix, drawcall_id):
     with open("{}{:05d}-indices.bin".format(prefix, drawcall_id), 'rb') as file:
-        indices = pickle.load(file)
+        #indices = pickle.load(file)
+        indices = numpyLoad(file)
 
     with open("{}{:05d}-positions.bin".format(prefix, drawcall_id), 'rb') as file:
-        positions = pickle.load(file)
+        #positions = pickle.load(file)
+        positions = numpyLoad(file)
 
     with open("{}{:05d}-uv.bin".format(prefix, drawcall_id), 'rb') as file:
-        uvs = pickle.load(file)
+        #uvs = pickle.load(file)
+        uvs = numpyLoad(file)
 
     texture_filename = "{}{:05d}-texture.png".format(prefix, drawcall_id)
     if os.path.isfile(texture_filename):
@@ -245,18 +259,21 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
             drawcall_id += 1
             continue
 
+        timer = Timer()
         try:
             indices, positions, uvs, img, constants = loadData(prefix, drawcall_id)
         except FileNotFoundError as err:
             print("Skipping ({})".format(err))
             drawcall_id += 1
             continue
+        profiling_counters["loadData"].add_sample(timer)
 
         uvOffsetScale, matrix, refMatrix = extractUniforms(constants, refMatrix)
         if uvOffsetScale is None:
             drawcall_id += 1
             continue
         
+        timer = Timer()
         # Make triangles from triangle strip index buffer
         n = len(indices)
         if constants["DrawCall"]["topology"] == 'TRIANGLE_STRIP':
@@ -265,26 +282,32 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
         else:
             tris = [ [ indices[3*i+j] for j in range(3) ] for i in range(n//3) ]
 
-        if constants["DrawCall"]["type"] == 'Google Maps':
-            verts = [ [ p[0] * 256.0, p[1] * 256.0, p[2] * 256.0 ] for p in positions ]
-        else:
-            verts = [ [ p[0], p[1], p[2] ] for p in positions ]
-
-        [ou, ov, su, sv] = uvOffsetScale
-        if uvs and len(uvs[0]) > 2:
-            print(f"uvs[0][2] = {uvs[0][2]}")
-            uvs = [u[:2] for u in uvs]
-
-        if constants["DrawCall"]["type"] == 'Google Maps':
-            uvs = [ [ (floor(u * 65535.0 + 0.5) + ou) * su, (floor(v * 65535.0 + 0.5) + ov) * sv ] for u, v in uvs ]
-        else:
-            uvs = [ [ (u + ou) * su, (v + ov) * sv ] for u, v in uvs ]
-
         if len(indices) == 0:
             continue
 
+        if constants["DrawCall"]["type"] == 'Google Maps':
+            verts = positions[:,:3] * 256.0 # [ [ p[0] * 256.0, p[1] * 256.0, p[2] * 256.0 ] for p in positions ]
+        else:
+            verts = positions[:,:3] # [ [ p[0], p[1], p[2] ] for p in positions ]
+
+        [ou, ov, su, sv] = uvOffsetScale
+        if uvs is not None and uvs.shape[1] > 2: # len(uvs[0]) > 2:
+            uvs = uvs[:,:2] # [u[:2] for u in uvs]
+
+        if constants["DrawCall"]["type"] == 'Google Maps':
+            #uvs = [ [ (floor(u * 65535.0 + 0.5) + ou) * su, (floor(v * 65535.0 + 0.5) + ov) * sv ] for u, v in uvs ]
+            uvs = (uvs * 65535.0 + 0.5 + np.array([ou, ov])) * np.array([su, sv])
+        else:
+            #uvs = [ [ (u + ou) * su, (v + ov) * sv ] for u, v in uvs ]
+            uvs = (uvs + np.array([ou, ov])) * np.array([su, sv])
+
+        profiling_counters["processData"].add_sample(timer)
+
+
         mesh_name = "BuildingMesh-{:05d}".format(drawcall_id)
+        timer = Timer()
         obj = addMesh(context, mesh_name, verts, tris, uvs)
+        profiling_counters["addMesh"].add_sample(timer)
         obj.matrix_world = matrix * globalScale
 
         mat_name = "BuildingMat-{:05d}".format(drawcall_id)
@@ -297,6 +320,12 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
         values = sum([list(v) for v in refMatrix], [])
         context.scene.maps_models_importer_ref_matrix = values
         context.scene.maps_models_importer_is_ref_matrix_valid = True
+
+    pref = getPreferences(context)
+    if pref.debug_info:
+        print("Profiling counters:")
+        for key, counter in profiling_counters.items():
+            print(f" - {key}: {counter.summary()}")
 
     return None # no error
 
