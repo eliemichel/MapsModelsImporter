@@ -131,7 +131,7 @@ You can use the [LilyCaptureMerger](https://gumroad.com/l/KSvXuu) add-on for thi
 
 ### There are so many textures, it's impractical for export!
 
-You can check out the [LilyTexturePacker](https://gumroad.com/l/DFExj) add-on I've made especially for this. Beware to use it only **after** using LilyTextureMerger, because the latter rely on individual block textures to perform matching.
+You can check out the [LilyTexturePacker](https://gumroad.com/l/DFExj) add-on I've made especially for this. Beware to use it only **after** using LilyCaptureMerger, because the latter rely on individual block textures to perform matching.
 
 ### How to clean up imported geometry
 
@@ -144,6 +144,10 @@ Even though it won't make miracles, the following can help:
 ### It's taking too long, how to automate this process?
 
 Although I don't know how to automate the capture itself, you can easily automate the importing part, see [this issue](https://github.com/eliemichel/MapsModelsImporter/issues/39) for an example of automation script, or [this one](https://github.com/eliemichel/MapsModelsImporter/issues/128) to import all rdc files from a directory.
+
+### Importing fails with some "UnicodeEncodeError"
+
+Remove any special character from your filename and from the directories that contain it.
 
 Notable use cases
 -----------------
