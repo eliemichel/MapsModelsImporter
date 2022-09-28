@@ -81,12 +81,12 @@ class CaptureScraper():
                         print("(Skipping drawcall {})".format(draw.name))
                         continue
                 batch.append(draw)
-            else:
-                print(f"Not relevant yet: {draw.name}")
-            if draw.name.startswith(first_call_prefix):
+            elif draw.name.startswith(first_call_prefix):
                 has_batch_started = True
                 if draw.name.startswith(drawcall_prefix):
                     batch.append(draw)
+            else:
+                print(f"Not relevant yet: {draw.name}")
         return batch, last_call_index
 
     def getVertexShaderConstants(self, draw, state=None):
