@@ -11,6 +11,8 @@ If you are having trouble importing a .rdc file with this add-on, please provide
 
  - The .rdc file
  - Your GPU name
- - Version of this add-on (must be the most recent one)
- - Version of RenderDoc (1.13 recommended)
- - Version of Blender (2.93 recommended)
+ - Version of this add-on
+ - Version of RenderDoc
+ - Version of Blender
+
+Before even reporting, make sure that you are using [the last version](https://github.com/eliemichel/MapsModelsImporter/releases/latest) of this add-on and that you stick to the version of Blender and RenderDoc indicated in the release notes of this last version!
