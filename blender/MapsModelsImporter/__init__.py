@@ -24,7 +24,7 @@
 bl_info = {
     "name": "Maps Models Importer",
     "author": "Elie Michel",
-    "version": (0, 5, 0),
+    "version": (0, 6, 0),
     "blender": (3, 1, 0),
     "location": "File > Import > Google Maps Capture",
     "description": "Import meshes from a Google Maps or Google Earth capture",

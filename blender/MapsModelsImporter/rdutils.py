@@ -32,8 +32,8 @@ class CaptureWrapper():
         self.cap = rd.OpenCaptureFile()
         status = self.cap.OpenFile(self.filename, '', None)
 
-        if status != rd.ReplayStatus.Succeeded:
-            print("Couldn't open file: " + str(status))
+        if not status.OK():
+            print("Couldn't open file: " + status.Message())
             self.err = True
             return None
 
@@ -42,18 +42,22 @@ class CaptureWrapper():
             self.err = True
             return None
         
-        status,self.controller = self.cap.OpenCapture(rd.ReplayOptions(), None)
+        status, self.controller = self.cap.OpenCapture(rd.ReplayOptions(), None)
 
-        if status != rd.ReplayStatus.Succeeded:
-            print("Couldn't initialise replay: " + str(status))
-            if status == 15:
+        if not status.OK():
+            print("Couldn't initialise replay: " + status.Message())
+            if status.code == 15:
                 print("This is likely due to an unsupported version of RenderDoc.")
             self.cap.Shutdown()
             self.err = True
             return None
+
+        # Once the replay is created, the CaptureFile can be shut down, there
+        # is no dependency on it by the ReplayController.
+        self.cap.Shutdown()
+
         return self.controller
         
     def __exit__(self, type, value, traceback):
         if not self.err:
             self.controller.Shutdown()
-            self.cap.Shutdown()
