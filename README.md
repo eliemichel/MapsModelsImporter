@@ -1,5 +1,7 @@
 *If this helps you save time or money for your job, please consider supporting the work involved in here ;)* [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=DNEEF8GDX2EV6&currency_code=EUR&source=url)
 
+**News** As of January 2023, Only versions older or equal to 0.5.0 no longer work because the associated version of RenderDoc are no longer able to inject into Chrome. Use version 0.6.0 (for RenderDoc 1.25 and Blender 3.4) or newer!
+
 **News** As of Aug 23, 2020, [**Google Earth** web](https://earth.google.com/web/) is now supported on top of Google Maps!
 
 **News** And since Aug 29, 2020, [**Mapy CZ**](https://mapy.cz) as well!
