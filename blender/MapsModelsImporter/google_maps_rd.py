@@ -59,8 +59,8 @@ _, CAPTURE_FILE, FILEPREFIX, MAX_BLOCKS_STR = sys.argv[:4]
 MAX_BLOCKS = int(MAX_BLOCKS_STR)
 
 def numpySave(array, file):
-    np.array([array.ndim], dtype=np.int).tofile(file)
-    np.array(array.shape, dtype=np.int).tofile(file)
+    np.array([array.ndim], dtype=np.int32).tofile(file)
+    np.array(array.shape, dtype=np.int32).tofile(file)
     dt = array.dtype.descr[0][1][1:3].encode('ascii')
     file.write(dt)
     array.tofile(file)
@@ -190,11 +190,17 @@ class CaptureScraper():
             first_call = "" # Try from the beginning on
             last_call = "Draw()"
             drawcall_prefix = "DrawIndexed"
+            min_drawcall = 0
+            while True:
+                skipped_drawcalls, new_min_drawcall = self.findDrawcallBatch(drawcalls[min_drawcall:], first_call, drawcall_prefix, last_call)
+                if not skipped_drawcalls or self.hasUniform(skipped_drawcalls[0], "_w"):
+                    break
+                min_drawcall += new_min_drawcall
         else:
             print("Error: Could not find the beginning of the relevant 3D draw calls")
             return [], "none"
 
-        print(f"Trying scraping strategy #{_strategy}...")
+        print(f"Trying scraping strategy #{_strategy} (from draw call #{min_drawcall})...")
         relevant_drawcalls, _ = self.findDrawcallBatch(
             drawcalls[min_drawcall:],
             first_call,
