@@ -150,14 +150,24 @@ def extractUniforms(constants, refMatrix):
         #matrix = makeMatrix(globUniforms['_uModelviewMatrix']) @ matrix
     elif '_uMV' in globUniforms:
         # Mapy CZ
-        uvOffsetScale = [0, -1, 1, -1]
+        _uParams = makeMatrix(globUniforms['_uParams'])
+        #uvOffsetScale = [0, -1, 1, -1]
+        uvOffsetScale = [
+            _uParams[2][2] / _uParams[0][2],
+            (_uParams[3][2] - 1) / _uParams[1][2],
+            _uParams[0][2],
+            -_uParams[1][2],
+        ]
         matrix = makeMatrix(globUniforms['_uMV'])
+
+        """
         postMatrix = Matrix(
             ((0.682889997959137, 0.20221230387687683, 0.7019768357276917, -0.06431722640991211),
             (0.07228320091962814, 0.9375065565109253, -0.3403771221637726, -0.11041564494371414),
             (-0.7269363403320312, 0.28318125009536743, 0.6255972981452942, -1.349690556526184),
             (0.0, 0.0, 0.0, 1.0))
             ) @ Matrix.Scale(500, 4)
+        """
     else:
         if refMatrix is None:
             print("globUniforms:")
@@ -287,6 +297,31 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
 
         if constants["DrawCall"]["type"] == 'Google Maps':
             verts = positions[:,:3] * 256.0 # [ [ p[0] * 256.0, p[1] * 256.0, p[2] * 256.0 ] for p in positions ]
+        elif constants["DrawCall"]["type"] == 'Mapy CZ':
+            raw_verts = positions[:,:3]
+            verts = []
+            globUniforms = constants['$Globals']
+            _uParamsSE = makeMatrix(globUniforms['_uParamsSE'])
+            for v0 in raw_verts:
+                r0 = [0.0, 0.0, 0.0, 0.0]
+                r1 = np.zeros((3,), dtype=np.float32)
+                r2 = np.zeros((3,), dtype=np.float32)
+                r1[0] = v0[0] * _uParamsSE[3][0] + _uParamsSE[0][0]
+                r1[1] = v0[1] * _uParamsSE[0][1] + _uParamsSE[1][0]
+                r1[2] = (v0[2] * _uParamsSE[1][1] + _uParamsSE[2][0]) * _uParamsSE[3][3]
+                r0[1] = np.linalg.norm(r1)
+                r0[2] = r0[1] + 0.0001
+                r0[1] = r0[1] - _uParamsSE[2][3]
+                r0[2] = 1.0 / r0[2]
+                r1 *= r0[2]
+                r0[2] = min(max(r0[1], _uParamsSE[1][2]), _uParamsSE[3][2]) # clamp
+                r0[2] = (r0[2] - _uParamsSE[1][2]) * _uParamsSE[0][3] * _uParamsSE[1][3] + _uParamsSE[2][2]
+                r0[1] = r0[1] * r0[2] - r0[1]
+                r2[0] = v0[0] * _uParamsSE[3][0]
+                r2[1] = v0[1] * _uParamsSE[0][1]
+                r2[2] = v0[2] * _uParamsSE[1][1]
+                r2 += r1 * r0[1]
+                verts.append(r2.tolist())
         else:
             verts = positions[:,:3] # [ [ p[0], p[1], p[2] ] for p in positions ]
 
