@@ -31,6 +31,7 @@ from .utils import getBinaryDir, makeTmpDir
 from .preferences import getPreferences
 
 SCRIPT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "google_maps_rd.py")
+SCRIPT_PATH_EXP = os.path.join(os.path.dirname(os.path.realpath(__file__)), "google_maps_rd_experimental.py")
 
 MSG_CONSOLE_DEBUG_OUTPUT = """\nPlease report to MapsModelsImporter developers providing the full console log with debug information.
 First turn on debug output by activating the "Debug Info"-checkbox under Edit > Preferences > Add-ons > MapsModelsImporter
@@ -61,7 +62,7 @@ MSG_UNKNOWN_ERROR = "Error: An unknown Error occurred!" + MSG_CONSOLE_DEBUG_OUTP
 class MapsModelsImportError(Exception):
     pass
 
-def captureToFiles(context, filepath, prefix, max_blocks):
+def captureToFiles(context, filepath, prefix, max_blocks, use_experimental):
     """Extract binary files and textures from a RenderDoc capture file.
     This spawns a standalone Python interpreter because renderdoc module cannot be loaded in embedded Python"""
     pref = getPreferences(context)
@@ -78,8 +79,9 @@ def captureToFiles(context, filepath, prefix, max_blocks):
     os.environ["PYTHONPATH"] += os.pathsep + os.path.abspath(getBinaryDir())
     os.environ["PYTHONIOENCODING"] = "utf-8"
     os.environ["PATH"] += os.pathsep + os.path.join(python_home, "bin")
+    script_path = SCRIPT_PATH_EXP if use_experimental else SCRIPT_PATH
     try:
-        out = subprocess.check_output([python, SCRIPT_PATH, filepath, prefix, str(max_blocks)], stderr=subprocess.STDOUT, text=True)
+        out = subprocess.check_output([python, script_path, filepath, prefix, str(max_blocks)], stderr=subprocess.STDOUT, text=True)
         if pref.debug_info:
             print("google_maps_rd returned:")
             print(out)
@@ -254,7 +256,7 @@ def loadData(prefix, drawcall_id):
 
 # -----------------------------------------------------------------------------
 
-def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
+def filesToBlender(context, prefix, max_blocks=200, use_experimental=False, globalScale=1.0/256.0):
     """Import data from the files extracted by captureToFiles"""
     # Get reference matrix
     refMatrix = None
@@ -366,7 +368,7 @@ def filesToBlender(context, prefix, max_blocks=200, globalScale=1.0/256.0):
 
 # -----------------------------------------------------------------------------
 
-def importCapture(context, filepath, max_blocks, pref):
+def importCapture(context, filepath, max_blocks, use_experimental, pref):
     prefix = makeTmpDir(pref, filepath)
-    captureToFiles(context, filepath, prefix, max_blocks)
-    filesToBlender(context, prefix, max_blocks)
+    captureToFiles(context, filepath, prefix, max_blocks, use_experimental)
+    filesToBlender(context, prefix, max_blocks, use_experimental)

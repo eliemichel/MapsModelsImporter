@@ -23,7 +23,7 @@
 
 import bpy
 from bpy_extras.io_utils import ImportHelper
-from bpy.props import StringProperty, IntProperty
+from bpy.props import StringProperty, IntProperty, BoolProperty
 from bpy.types import Operator
 
 from .google_maps import importCapture, MapsModelsImportError
@@ -48,10 +48,16 @@ class IMP_OP_GoogleMapsCapture(Operator, ImportHelper):
         default=-1,
     )
 
+    use_experimental: BoolProperty(
+        name="Experimental",
+        description="Use the new experimental way of extracting draw calls.",
+        default=False,
+    )
+
     def execute(self, context):
         pref = getPreferences(context)
         try:
-            importCapture(context, self.filepath, self.max_blocks, pref)
+            importCapture(context, self.filepath, self.max_blocks, self.use_experimental, pref)
             error = None
         except MapsModelsImportError as err:
             error = err.args[0]
