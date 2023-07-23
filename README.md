@@ -47,7 +47,7 @@ set RENDERDOC_HOOK_EGL=0
 
   5. Press OK in the chrome dialog; 
 
-  6. Go to Google Maps (not Google Earth!) in satellite view, and take a capture using `Print Screen` **while moving** in the viewport, check that you have the debug info in the top left, if you don't then submit an issue here;
+  6. Go to Google Maps or Google Earth in satellite view, and take a capture using `Print Screen` **while moving** (not needed for google earth) in the viewport, check that you have the debug info in the top left, if you don't then submit an issue here;
 
   7. In RenderDoc, save the capture as an rdc file
 
