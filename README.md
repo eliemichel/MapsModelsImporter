@@ -189,3 +189,5 @@ Other links
 To import map data in Blender, this open source addon is very handy: [domlysz/BlenderGIS](https://github.com/domlysz/BlenderGIS)
 
 Here is another attempt at reverse-engineering Google data: [retroplasma/earth-reverse-engineering](https://github.com/retroplasma/earth-reverse-engineering)
+
+Some Google 3D cities available as OGC 3D tiles, see [issue #279](https://github.com/eliemichel/MapsModelsImporter/issues/279).
