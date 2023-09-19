@@ -100,6 +100,8 @@ This was a common issue with versions of this add-on prior to v0.2.0. Update to 
 
  - Make sure chrome was completely stopped before starting the custom shortcut
  - Make sure you have hardware acceleration enabled in the advanced section of the chrome settings.
+ - Make sure both RenderDoc and Chrome run on the same GPU (if you have a laptop with integrated + dedicated graphics devices)
+ - If you really desperate, try running RenderDoc and Chrome as admin; I am reluctant at suggesting this but some people reported it helped them.
 
 ### Chrome is showing a warning about an unsupported feature
 
@@ -116,6 +118,17 @@ Make sure you use the right custom shortcut to start chrome and that you closed 
 ### PrintScr does not actually take a capture
 
 It happens sometimes, in this case you can use the "Capture after delay" button in RenderDoc to trigger a capture. Don't forget to make sure to move in the 3D viewport at the very time the capture occurs.
+
+### Importing fails with some "UnicodeEncodeError"
+
+Remove any special character from your filename and from the directories that contain it.
+
+### Importing fails with 'key "Principled BSDF" not found'
+
+Make sure your Blender is in English, do not used a translated interface (sorry).
+
+Frequently Asked Questions
+--------------------------
 
 ### How to increase the level of detail?
 
@@ -146,10 +159,6 @@ Even though it won't make miracles, the following can help:
 ### It's taking too long, how to automate this process?
 
 Although I don't know how to automate the capture itself, you can easily automate the importing part, see [this issue](https://github.com/eliemichel/MapsModelsImporter/issues/39) for an example of automation script, or [this one](https://github.com/eliemichel/MapsModelsImporter/issues/128) to import all rdc files from a directory.
-
-### Importing fails with some "UnicodeEncodeError"
-
-Remove any special character from your filename and from the directories that contain it.
 
 Notable use cases
 -----------------
