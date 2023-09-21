@@ -23,14 +23,14 @@ Download a [release](https://github.com/eliemichel/MapsModelsImporter/releases) 
 
 **/!\ Do not use the "Download as zip" button of GitHub, make sure you use a release zip instead.**
 
-Install [RenderDoc](https://renderdoc.org/builds), version 1.16
+Install [RenderDoc](https://renderdoc.org/builds), get **the very version specified in [the last release notes](https://github.com/eliemichel/MapsModelsImporter/releases/latest) of this add-on!
 
 Usage
 -----
 
 You can follow instruction from the walkthrough video: https://youtu.be/X6Q7dbtXVZQ (Slightly out of date, refer to the steps bellow) Alternatively, check out the following steps:
 
-  1. Start RenderDoc 1.16, go to `Tools > Settings` and check `Enable process injection (restart required)`, restart RenderDoc then click `File > Inject into process`;
+  1. Start RenderDoc, go to `Tools > Settings` and check `Enable process injection (restart required)`, restart RenderDoc then click `File > Inject into process`;
 
   2. Start terminal (Win+R, "cmd") and run (adapt the second line to the location of your Chrome installation):
 
@@ -66,7 +66,7 @@ Useful information can be found in the comment of the video, as well as on [the 
 
 ### Check software versions
 
-Most importantly, use the last version of this add-on. In the release notes of each version the recommended/required versions of RenderDoc and Blender are specified. As of now, use RenderDoc v1.13 (**not** something else) and the last version of Blender.
+Most importantly, use the last version of this add-on. In [the release notes](https://github.com/eliemichel/MapsModelsImporter/releases/latest) of each version the recommended/required versions of RenderDoc and Blender are specified.
 
 ### Example of capture files
 
@@ -96,8 +96,6 @@ Try typing `chrome://flags` and then checking `Override software rendering list`
 
 Try typing `chrome://settings/system` and making sure `Use hardware acceleration when available` is enabled
 
-Make sure you are using RenderDoc 1.16
-
 ### API: OpenGL (Not Presenting)
 
 This was a common issue with versions of this add-on prior to v0.2.0. Update to the latest version of this add-on, then make sure you remove the `--use-angle=gl` option from the chrome shortcut. You should get `API: D3D11`.
@@ -124,6 +122,10 @@ Make sure you use the right custom shortcut to start chrome and that you closed 
 ### PrintScr does not actually take a capture
 
 It happens sometimes, in this case you can use the "Capture after delay" button in RenderDoc to trigger a capture. Don't forget to make sure to move in the 3D viewport at the very time the capture occurs.
+
+### Importing fails
+
+Make sure you are using the correct version of RenderDoc, which may not be the latest version (see [release notes](https://github.com/eliemichel/MapsModelsImporter/releases/latest)).
 
 ### Importing fails with some "UnicodeEncodeError"
 
