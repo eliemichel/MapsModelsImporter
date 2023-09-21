@@ -23,14 +23,14 @@ Download a [release](https://github.com/eliemichel/MapsModelsImporter/releases) 
 
 **/!\ Do not use the "Download as zip" button of GitHub, make sure you use a release zip instead.**
 
-Install [RenderDoc](https://renderdoc.org/builds), last version
+Install [RenderDoc](https://renderdoc.org/builds), version 1.16
 
 Usage
 -----
 
-You can follow instruction from the walkthrough video: https://youtu.be/X6Q7dbtXVZQ Alternatively, check out the following steps:
+You can follow instruction from the walkthrough video: https://youtu.be/X6Q7dbtXVZQ (Slightly out of date, refer to the steps bellow) Alternatively, check out the following steps:
 
-  1. Start RenderDoc, and `File > Inject into process`;
+  1. Start RenderDoc 1.16, go to `Tools > Settings` and check `Enable process injection (restart required)`, restart RenderDoc then click `File > Inject into process`;
 
   2. Start terminal (Win+R, "cmd") and run (adapt the second line to the location of your Chrome installation):
 
@@ -41,13 +41,13 @@ set RENDERDOC_HOOK_EGL=0
 
   3. Do NOT press Ok on the dialog box yet;
 
-  4. In RenderDoc, search for chrome's GPU process and inject into it (you may use the search field);
+  4. In RenderDoc, search for chrome's GPU process and inject into it (Dubble click on the ID or click inject with the ID selected in the bottom right) (you may use the search field);
 
 ![Inject into the process called something like "chrome GPU"](doc/injection.png)
 
-  5. Press OK in the chrome dialog;
+  5. Press OK in the chrome dialog; 
 
-  6. Go to Google Maps (not Google Earth!) in satellite view, and take a capture using `Print Screen` **while moving** in the viewport;
+  6. Go to Google Maps or Google Earth in satellite view, and take a capture using `Print Screen` **while moving** (not needed for google earth) in the viewport, check that you have the debug info in the top left, if you don't then submit an issue here;
 
   7. In RenderDoc, save the capture as an rdc file
 
@@ -91,6 +91,12 @@ Do NOT use the green "Clone or download" button of GitHub. I know it's tempting,
 Try appending `?force=webgl` at the end of the google maps URL. Also, check that you enabled the Globe mode (an extra button on the right-hand side once you are in satellite mode).
 
 If it is not enough, you can try to change your region to United States because when you are localized in some other area, Google might chose to turn 3D off for some (political?) reason. See [this post](https://blenderartists.org/t/google-maps-models-importer/1153561/176).
+
+Try typing `chrome://flags` and then checking `Override software rendering list` 
+
+Try typing `chrome://settings/system` and making sure `Use hardware acceleration when available` is enabled
+
+Make sure you are using RenderDoc 1.16
 
 ### API: OpenGL (Not Presenting)
 
