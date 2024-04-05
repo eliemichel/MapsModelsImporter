@@ -1,4 +1,4 @@
-# Copyright (c) 2019 - 2021 Elie Michel
+# Copyright (c) 2019 - 2024 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -24,8 +24,8 @@
 bl_info = {
     "name": "Maps Models Importer",
     "author": "Elie Michel",
-    "version": (0, 6, 3),
-    "blender": (3, 1, 0),
+    "version": (0, 7, 0),
+    "blender": (4, 1, 0),
     "location": "File > Import > Google Maps Capture",
     "description": "Import meshes from a Google Maps or Google Earth capture",
     "warning": "",

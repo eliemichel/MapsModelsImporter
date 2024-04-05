@@ -1,4 +1,4 @@
-# Copyright (c) 2019 - 2021 Elie Michel
+# Copyright (c) 2019 - 2024 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -214,7 +214,6 @@ def addImageMaterial(name, obj, img):
     obj.data.materials.append(mat)
     nodes = mat.node_tree.nodes
     principled = nodes["Principled BSDF"]
-    principled.inputs["Specular"].default_value = 0.0
     principled.inputs["Roughness"].default_value = 1.0
     if img is not None:
         texture_node = nodes.new(type="ShaderNodeTexImage")
@@ -223,8 +222,8 @@ def addImageMaterial(name, obj, img):
         link = links.new(texture_node.outputs[0], principled.inputs[0])
 
 def numpyLoad(file):
-    (dim,) = np.fromfile(file, dtype=np.int, count=1)
-    shape = np.fromfile(file, dtype=np.int, count=dim)
+    (dim,) = np.fromfile(file, dtype=np.int32, count=1)
+    shape = np.fromfile(file, dtype=np.int32, count=dim)
     dt = np.dtype(file.read(2).decode('ascii'))
     array = np.fromfile(file, dtype=dt)
     array = array.reshape(shape)

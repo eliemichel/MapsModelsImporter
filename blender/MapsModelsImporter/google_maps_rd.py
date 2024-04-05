@@ -1,4 +1,4 @@
-# Copyright (c) 2019 - 2021 Elie Michel
+# Copyright (c) 2019 - 2024 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -194,14 +194,14 @@ class CaptureScraper():
             while True:
                 skipped_drawcalls, new_min_drawcall = self.findDrawcallBatch(drawcalls[min_drawcall:], first_call, drawcall_prefix, last_call)
                 if not skipped_drawcalls or self.hasUniform(skipped_drawcalls[0], "_w"):
-                    break
+                    break # Found a good draw call
                 min_drawcall += new_min_drawcall
         else:
             print("Error: Could not find the beginning of the relevant 3D draw calls")
             return [], "none"
 
         print(f"Trying scraping strategy #{_strategy} (from draw call #{min_drawcall})...")
-        relevant_drawcalls, _ = self.findDrawcallBatch(
+        relevant_drawcalls, new_min_drawcall = self.findDrawcallBatch(
             drawcalls[min_drawcall:],
             first_call,
             drawcall_prefix,
@@ -224,6 +224,36 @@ class CaptureScraper():
                 call for call in relevant_drawcalls
                 if self.hasUniform(call, "_uMeshToWorldMatrix")
             ]
+
+        if capture_type == "Google Maps":
+            # Accumulate multiple batches
+            batch_count = 1
+            while True:
+                min_drawcall += new_min_drawcall
+                # Find a batch
+                first_call = "" # Try from the beginning on
+                last_call = "Draw()"
+                drawcall_prefix = "DrawIndexed"
+                while True:
+                    skipped_drawcalls, new_min_drawcall = self.findDrawcallBatch(drawcalls[min_drawcall:], first_call, drawcall_prefix, last_call)
+                    if not skipped_drawcalls or self.hasUniform(skipped_drawcalls[0], "_w"):
+                        break # Found a good draw call
+                    min_drawcall += new_min_drawcall
+
+                # Accumulate the batch
+                new_relevant_drawcalls, new_min_drawcall = self.findDrawcallBatch(
+                    drawcalls[min_drawcall:],
+                    first_call,
+                    drawcall_prefix,
+                    last_call)
+
+                if not new_relevant_drawcalls:
+                    break
+
+                relevant_drawcalls.extend(new_relevant_drawcalls)
+                batch_count += 1
+
+            print(f"Found {batch_count} batches.")
 
         return relevant_drawcalls, capture_type
 

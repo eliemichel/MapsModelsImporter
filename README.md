@@ -1,5 +1,7 @@
 *If this helps you save time or money for your job, please consider supporting the work involved in here ;)* [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=DNEEF8GDX2EV6&currency_code=EUR&source=url)
 
+**News** As of January 2024, an extra command line option `--disable_direct_composition=1` is recommended to prevent Chrome from restarting the GPU process.
+
 **News** As of January 2023, Only versions older or equal to 0.5.0 no longer work because the associated version of RenderDoc are no longer able to inject into Chrome. Use version 0.6.0 (for RenderDoc 1.25 and Blender 3.4) or newer!
 
 **News** As of Aug 23, 2020, [**Google Earth** web](https://earth.google.com/web/) is now supported on top of Google Maps!
@@ -36,7 +38,7 @@ You can follow instruction from the walkthrough video: https://youtu.be/X6Q7dbtX
 
 ```
 set RENDERDOC_HOOK_EGL=0
-"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --disable-gpu-sandbox --gpu-startup-dialog
+"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --disable-gpu-sandbox --gpu-startup-dialog --disable_direct_composition=1
 ```
 
   3. Do NOT press Ok on the dialog box yet;
@@ -56,7 +58,7 @@ set RENDERDOC_HOOK_EGL=0
 For step 2. you can create a link to Chrome rather than usig the cmd, and put as target (again, adapt the path to `chrome.exe` to your installation):
 
 ```
-C:\Windows\System32\cmd.exe /c "SET RENDERDOC_HOOK_EGL=0 && START "" ^"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe^" --disable-gpu-sandbox --gpu-startup-dialog"
+C:\Windows\System32\cmd.exe /c "SET RENDERDOC_HOOK_EGL=0 && START "" ^"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe^" --disable-gpu-sandbox --gpu-startup-dialog --disable_direct_composition=1"
 ```
 
 Troubleshooting
