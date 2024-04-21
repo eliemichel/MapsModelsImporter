@@ -120,7 +120,7 @@ class CaptureScraper():
                         memval = 0
                         if member.type == rd.VarType.Float:
                             memval = member.value.f32v[:member.rows * member.columns]
-                        elif member.type == rd.VarType.Int:
+                        elif member.type == rd.VarType.SInt:
                             memval = member.value.s32v[:member.rows * member.columns]
                         else:
                             print("Unsupported type!")
@@ -129,7 +129,7 @@ class CaptureScraper():
                 else:
                     if var.type == rd.VarType.Float:
                         val = var.value.f32v[:var.rows * var.columns]
-                    elif var.type == rd.VarType.Int:
+                    elif var.type == rd.VarType.SInt:
                         val = var.value.s32v[:var.rows * var.columns]
                     else:
                         print("Unsupported type!")
@@ -140,7 +140,7 @@ class CaptureScraper():
 
     def hasUniform(self, draw, uniform):
         constants = self.getVertexShaderConstants(draw)
-        return uniform in constants['$Globals']
+        return '$Globals' in constants and uniform in constants['$Globals']
 
     def extractRelevantCalls(self, drawcalls, _strategy=4):
         """List the drawcalls related to drawing the 3D meshes thank to a ad hoc heuristic
@@ -174,7 +174,7 @@ class CaptureScraper():
             while True:
                 skipped_drawcalls, new_min_drawcall = self.findDrawcallBatch(drawcalls[min_drawcall:], first_call, drawcall_prefix, last_call)
                 if not skipped_drawcalls or self.hasUniform(skipped_drawcalls[0], "_uMeshToWorldMatrix"):
-                    break
+                    break # Found a good draw call
                 min_drawcall += new_min_drawcall
         elif _strategy == 6:
             # Actually sometimes there's only one batch
